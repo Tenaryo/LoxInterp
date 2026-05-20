@@ -1,45 +1,43 @@
+#include <cstdlib>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
-#include <sstream>
 #include <string>
+#include <string_view>
 
-[[nodiscard]] auto read_file_contents(const std::string& filename) -> std::string {
-    std::ifstream file(filename);
+auto read_file_contents(const std::filesystem::path& path) -> std::string {
+    std::ifstream file(path);
     if (!file.is_open()) [[unlikely]] {
-        std::cerr << "Error reading file: " << filename << '\n';
-        std::exit(1);
+        std::cerr << "Error reading file: " << path << '\n';
+        std::exit(EXIT_FAILURE);
     }
-
-    std::stringstream buffer;
-    buffer << file.rdbuf();
-
-    return buffer.str();
+    file.seekg(0, std::ios::end);
+    std::string content(static_cast<std::size_t>(file.tellg()), '\0');
+    file.seekg(0);
+    file.read(content.data(), static_cast<std::streamsize>(content.size()));
+    return content;
 }
 
 auto main(int argc, char* argv[]) -> int {
     std::cout << std::unitbuf;
     std::cerr << std::unitbuf;
 
-    if (argc < 3) [[unlikely]] {
+    if (argc < 3) {
         std::cerr << "Usage: ./your_program tokenize <filename>" << '\n';
-        return 1;
+        return EXIT_FAILURE;
     }
 
-    const std::string command = argv[1];
-
+    const std::string_view command = argv[1];
     if (command == "tokenize") {
         std::string file_contents = read_file_contents(argv[2]);
-
         if (!file_contents.empty()) {
             std::cerr << "Scanner not implemented" << '\n';
-            return 1;
+            return EXIT_FAILURE;
         }
         std::cout << "EOF  null" << '\n';
-
     } else {
         std::cerr << "Unknown command: " << command << '\n';
-        return 1;
+        return EXIT_FAILURE;
     }
-
-    return 0;
+    return EXIT_SUCCESS;
 }
