@@ -40,6 +40,24 @@ auto Scanner::scan_token() -> void {
     case '}':
         add_token(TokenType::RIGHT_BRACE);
         break;
+    case ',':
+        add_token(TokenType::COMMA);
+        break;
+    case '.':
+        add_token(TokenType::DOT);
+        break;
+    case '-':
+        add_token(TokenType::MINUS);
+        break;
+    case '+':
+        add_token(TokenType::PLUS);
+        break;
+    case ';':
+        add_token(TokenType::SEMICOLON);
+        break;
+    case '*':
+        add_token(TokenType::STAR);
+        break;
     default:
         break;
     }
@@ -56,6 +74,18 @@ auto format_token(const Token& token) -> std::string {
             return "LEFT_BRACE";
         case TokenType::RIGHT_BRACE:
             return "RIGHT_BRACE";
+        case TokenType::COMMA:
+            return "COMMA";
+        case TokenType::DOT:
+            return "DOT";
+        case TokenType::MINUS:
+            return "MINUS";
+        case TokenType::PLUS:
+            return "PLUS";
+        case TokenType::SEMICOLON:
+            return "SEMICOLON";
+        case TokenType::STAR:
+            return "STAR";
         case TokenType::EOF_:
             return "EOF";
         }
