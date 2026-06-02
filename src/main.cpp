@@ -5,6 +5,8 @@
 #include <string>
 #include <string_view>
 
+#include "scanner.hpp"
+
 auto read_file_contents(const std::filesystem::path& path) -> std::string {
     std::ifstream file(path);
     if (!file.is_open()) [[unlikely]] {
@@ -30,11 +32,11 @@ auto main(int argc, char* argv[]) -> int {
     const std::string_view command = argv[1];
     if (command == "tokenize") {
         std::string file_contents = read_file_contents(argv[2]);
-        if (!file_contents.empty()) {
-            std::cerr << "Scanner not implemented" << '\n';
-            return EXIT_FAILURE;
+        Scanner scanner(std::move(file_contents));
+        auto tokens = scanner.scan_tokens();
+        for (const auto& token : tokens) {
+            std::cout << format_token(token) << '\n';
         }
-        std::cout << "EOF  null" << '\n';
     } else {
         std::cerr << "Unknown command: " << command << '\n';
         return EXIT_FAILURE;
