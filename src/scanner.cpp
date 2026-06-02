@@ -34,6 +34,13 @@ auto Scanner::add_token(TokenType type) -> void {
 auto Scanner::scan_token() -> void {
     char ch = advance();
     switch (ch) {
+    case ' ':
+    case '\r':
+    case '\t':
+        break;
+    case '\n':
+        line_++;
+        break;
     case '(':
         add_token(TokenType::LEFT_PAREN);
         break;

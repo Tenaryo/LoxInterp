@@ -229,3 +229,28 @@ TEST(ScannerTest, SlashFollowedByCode) {
     EXPECT_EQ(tokens[2].type, TokenType::RIGHT_PAREN);
     EXPECT_EQ(tokens[3].type, TokenType::EOF_);
 }
+
+TEST(ScannerTest, WhitespaceOnly) {
+    Scanner scanner(" \t\r\n");
+    auto tokens = scanner.scan_tokens();
+    ASSERT_EQ(tokens.size(), 1);
+    EXPECT_EQ(tokens[0].type, TokenType::EOF_);
+}
+
+TEST(ScannerTest, TokensWithSpaces) {
+    Scanner scanner(" ( ) ");
+    auto tokens = scanner.scan_tokens();
+    ASSERT_EQ(tokens.size(), 3);
+    EXPECT_EQ(tokens[0].type, TokenType::LEFT_PAREN);
+    EXPECT_EQ(tokens[1].type, TokenType::RIGHT_PAREN);
+    EXPECT_EQ(tokens[2].type, TokenType::EOF_);
+}
+
+TEST(ScannerTest, TokensWithNewlines) {
+    Scanner scanner("(\n)");
+    auto tokens = scanner.scan_tokens();
+    ASSERT_EQ(tokens.size(), 3);
+    EXPECT_EQ(tokens[0].type, TokenType::LEFT_PAREN);
+    EXPECT_EQ(tokens[1].type, TokenType::RIGHT_PAREN);
+    EXPECT_EQ(tokens[2].type, TokenType::EOF_);
+}
