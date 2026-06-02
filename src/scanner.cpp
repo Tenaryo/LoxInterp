@@ -1,5 +1,7 @@
 #include "scanner.hpp"
 
+#include <iostream>
+
 Scanner::Scanner(std::string source) : source_(std::move(source)) {
 }
 
@@ -10,6 +12,10 @@ auto Scanner::scan_tokens() -> std::vector<Token> {
     }
     tokens_.push_back({TokenType::EOF_, "", std::monostate{}, line_});
     return std::move(tokens_);
+}
+
+auto Scanner::has_errors() const -> bool {
+    return had_error_;
 }
 
 auto Scanner::is_at_end() const -> bool {
@@ -59,8 +65,14 @@ auto Scanner::scan_token() -> void {
         add_token(TokenType::STAR);
         break;
     default:
+        error(line_, std::string("Unexpected character: ") + ch);
         break;
     }
+}
+
+auto Scanner::error(int line, std::string_view message) -> void {
+    had_error_ = true;
+    std::cerr << "[line " << line << "] Error: " << message << '\n';
 }
 
 auto format_token(const Token& token) -> std::string {

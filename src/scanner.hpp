@@ -32,17 +32,20 @@ class Scanner {
     explicit Scanner(std::string source);
 
     auto scan_tokens() -> std::vector<Token>;
+    auto has_errors() const -> bool;
 
   private:
     [[nodiscard]] auto is_at_end() const -> bool;
     auto advance() -> char;
     auto add_token(TokenType type) -> void;
     auto scan_token() -> void;
+    auto error(int line, std::string_view message) -> void;
 
     std::string source_;
     std::size_t start_{0};
     std::size_t current_{0};
     int line_{1};
+    bool had_error_{false};
     std::vector<Token> tokens_;
 };
 

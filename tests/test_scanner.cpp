@@ -99,3 +99,26 @@ TEST(ScannerTest, SingleStar) {
     EXPECT_EQ(tokens[0].lexeme, "*");
     EXPECT_EQ(tokens[1].type, TokenType::EOF_);
 }
+
+TEST(ScannerTest, NoErrorForValidInput) {
+    Scanner scanner("(,.-+)");
+    scanner.scan_tokens();
+    EXPECT_FALSE(scanner.has_errors());
+}
+
+TEST(ScannerTest, ErrorForUnknownCharacter) {
+    Scanner scanner("$");
+    scanner.scan_tokens();
+    EXPECT_TRUE(scanner.has_errors());
+}
+
+TEST(ScannerTest, ValidTokensProducedDespiteErrors) {
+    Scanner scanner("(,$#)");
+    auto tokens = scanner.scan_tokens();
+    EXPECT_TRUE(scanner.has_errors());
+    ASSERT_EQ(tokens.size(), 4);
+    EXPECT_EQ(tokens[0].type, TokenType::LEFT_PAREN);
+    EXPECT_EQ(tokens[1].type, TokenType::COMMA);
+    EXPECT_EQ(tokens[2].type, TokenType::RIGHT_PAREN);
+    EXPECT_EQ(tokens[3].type, TokenType::EOF_);
+}

@@ -31,11 +31,16 @@ auto main(int argc, char* argv[]) -> int {
 
     const std::string_view command = argv[1];
     if (command == "tokenize") {
+        constexpr int kLexicalErrorExit = 65;
+
         std::string file_contents = read_file_contents(argv[2]);
         Scanner scanner(std::move(file_contents));
         auto tokens = scanner.scan_tokens();
         for (const auto& token : tokens) {
             std::cout << format_token(token) << '\n';
+        }
+        if (scanner.has_errors()) {
+            return kLexicalErrorExit;
         }
     } else {
         std::cerr << "Unknown command: " << command << '\n';
