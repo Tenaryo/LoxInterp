@@ -34,6 +34,12 @@ auto Scanner::scan_token() -> void {
     case ')':
         add_token(TokenType::RIGHT_PAREN);
         break;
+    case '{':
+        add_token(TokenType::LEFT_BRACE);
+        break;
+    case '}':
+        add_token(TokenType::RIGHT_BRACE);
+        break;
     default:
         break;
     }
@@ -46,6 +52,10 @@ auto format_token(const Token& token) -> std::string {
             return "LEFT_PAREN";
         case TokenType::RIGHT_PAREN:
             return "RIGHT_PAREN";
+        case TokenType::LEFT_BRACE:
+            return "LEFT_BRACE";
+        case TokenType::RIGHT_BRACE:
+            return "RIGHT_BRACE";
         case TokenType::EOF_:
             return "EOF";
         }

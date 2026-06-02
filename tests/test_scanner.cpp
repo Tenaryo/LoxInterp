@@ -27,3 +27,21 @@ TEST(ScannerTest, SingleRightParen) {
     EXPECT_EQ(tokens[0].lexeme, ")");
     EXPECT_EQ(tokens[1].type, TokenType::EOF_);
 }
+
+TEST(ScannerTest, SingleLeftBrace) {
+    Scanner scanner("{");
+    auto tokens = scanner.scan_tokens();
+    ASSERT_EQ(tokens.size(), 2);
+    EXPECT_EQ(tokens[0].type, TokenType::LEFT_BRACE);
+    EXPECT_EQ(tokens[0].lexeme, "{");
+    EXPECT_EQ(tokens[1].type, TokenType::EOF_);
+}
+
+TEST(ScannerTest, SingleRightBrace) {
+    Scanner scanner("}");
+    auto tokens = scanner.scan_tokens();
+    ASSERT_EQ(tokens.size(), 2);
+    EXPECT_EQ(tokens[0].type, TokenType::RIGHT_BRACE);
+    EXPECT_EQ(tokens[0].lexeme, "}");
+    EXPECT_EQ(tokens[1].type, TokenType::EOF_);
+}
