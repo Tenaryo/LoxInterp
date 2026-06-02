@@ -254,3 +254,13 @@ TEST(ScannerTest, TokensWithNewlines) {
     EXPECT_EQ(tokens[1].type, TokenType::RIGHT_PAREN);
     EXPECT_EQ(tokens[2].type, TokenType::EOF_);
 }
+
+TEST(ScannerTest, MultiLineErrors) {
+    Scanner scanner("# (\n)\t@");
+    auto tokens = scanner.scan_tokens();
+    EXPECT_TRUE(scanner.has_errors());
+    ASSERT_EQ(tokens.size(), 3);
+    EXPECT_EQ(tokens[0].type, TokenType::LEFT_PAREN);
+    EXPECT_EQ(tokens[1].type, TokenType::RIGHT_PAREN);
+    EXPECT_EQ(tokens[2].type, TokenType::EOF_);
+}
