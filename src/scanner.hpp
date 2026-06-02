@@ -23,6 +23,7 @@ enum class TokenType {
     GREATER_EQUAL,
     LESS,
     LESS_EQUAL,
+    SLASH,
     EOF_,
 };
 

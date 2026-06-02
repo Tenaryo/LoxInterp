@@ -76,6 +76,14 @@ auto Scanner::scan_token() -> void {
     case '>':
         add_token(match('=') ? TokenType::GREATER_EQUAL : TokenType::GREATER);
         break;
+    case '/':
+        if (match('/')) {
+            while (!is_at_end() && advance() != '\n') {
+            }
+        } else {
+            add_token(TokenType::SLASH);
+        }
+        break;
     default:
         error(line_, std::string("Unexpected character: ") + ch);
         break;
@@ -137,6 +145,8 @@ auto format_token(const Token& token) -> std::string {
             return "LESS";
         case TokenType::LESS_EQUAL:
             return "LESS_EQUAL";
+        case TokenType::SLASH:
+            return "SLASH";
         case TokenType::EOF_:
             return "EOF";
         }
