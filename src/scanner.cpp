@@ -26,6 +26,13 @@ auto Scanner::advance() -> char {
     return source_[current_++];
 }
 
+auto Scanner::peek() const -> char {
+    if (is_at_end()) {
+        return '\0';
+    }
+    return source_[current_];
+}
+
 auto Scanner::add_token(TokenType type) -> void {
     std::string lexeme = source_.substr(start_, current_ - start_);
     tokens_.push_back({type, std::move(lexeme), std::monostate{}, line_});
@@ -85,7 +92,8 @@ auto Scanner::scan_token() -> void {
         break;
     case '/':
         if (match('/')) {
-            while (!is_at_end() && advance() != '\n') {
+            while (!is_at_end() && peek() != '\n') {
+                advance();
             }
         } else {
             add_token(TokenType::SLASH);

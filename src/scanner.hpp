@@ -46,6 +46,7 @@ class Scanner {
   private:
     [[nodiscard]] auto is_at_end() const -> bool;
     auto advance() -> char;
+    auto peek() const -> char;
     auto add_token(TokenType type) -> void;
     auto scan_token() -> void;
     auto error(int line, std::string_view message) -> void;
