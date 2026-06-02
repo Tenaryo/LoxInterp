@@ -64,6 +64,18 @@ auto Scanner::scan_token() -> void {
     case '*':
         add_token(TokenType::STAR);
         break;
+    case '!':
+        add_token(match('=') ? TokenType::BANG_EQUAL : TokenType::BANG);
+        break;
+    case '=':
+        add_token(match('=') ? TokenType::EQUAL_EQUAL : TokenType::EQUAL);
+        break;
+    case '<':
+        add_token(match('=') ? TokenType::LESS_EQUAL : TokenType::LESS);
+        break;
+    case '>':
+        add_token(match('=') ? TokenType::GREATER_EQUAL : TokenType::GREATER);
+        break;
     default:
         error(line_, std::string("Unexpected character: ") + ch);
         break;
@@ -73,6 +85,17 @@ auto Scanner::scan_token() -> void {
 auto Scanner::error(int line, std::string_view message) -> void {
     had_error_ = true;
     std::cerr << "[line " << line << "] Error: " << message << '\n';
+}
+
+auto Scanner::match(char expected) -> bool {
+    if (is_at_end()) {
+        return false;
+    }
+    if (source_[current_] != expected) {
+        return false;
+    }
+    current_++;
+    return true;
 }
 
 auto format_token(const Token& token) -> std::string {
@@ -98,6 +121,22 @@ auto format_token(const Token& token) -> std::string {
             return "SEMICOLON";
         case TokenType::STAR:
             return "STAR";
+        case TokenType::BANG:
+            return "BANG";
+        case TokenType::BANG_EQUAL:
+            return "BANG_EQUAL";
+        case TokenType::EQUAL:
+            return "EQUAL";
+        case TokenType::EQUAL_EQUAL:
+            return "EQUAL_EQUAL";
+        case TokenType::GREATER:
+            return "GREATER";
+        case TokenType::GREATER_EQUAL:
+            return "GREATER_EQUAL";
+        case TokenType::LESS:
+            return "LESS";
+        case TokenType::LESS_EQUAL:
+            return "LESS_EQUAL";
         case TokenType::EOF_:
             return "EOF";
         }

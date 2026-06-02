@@ -15,6 +15,14 @@ enum class TokenType {
     PLUS,
     SEMICOLON,
     STAR,
+    BANG,
+    BANG_EQUAL,
+    EQUAL,
+    EQUAL_EQUAL,
+    GREATER,
+    GREATER_EQUAL,
+    LESS,
+    LESS_EQUAL,
     EOF_,
 };
 
@@ -40,6 +48,7 @@ class Scanner {
     auto add_token(TokenType type) -> void;
     auto scan_token() -> void;
     auto error(int line, std::string_view message) -> void;
+    auto match(char expected) -> bool;
 
     std::string source_;
     std::size_t start_{0};

@@ -122,3 +122,75 @@ TEST(ScannerTest, ValidTokensProducedDespiteErrors) {
     EXPECT_EQ(tokens[2].type, TokenType::RIGHT_PAREN);
     EXPECT_EQ(tokens[3].type, TokenType::EOF_);
 }
+
+TEST(ScannerTest, SingleBang) {
+    Scanner scanner("!");
+    auto tokens = scanner.scan_tokens();
+    ASSERT_EQ(tokens.size(), 2);
+    EXPECT_EQ(tokens[0].type, TokenType::BANG);
+    EXPECT_EQ(tokens[0].lexeme, "!");
+    EXPECT_EQ(tokens[1].type, TokenType::EOF_);
+}
+
+TEST(ScannerTest, BangEqual) {
+    Scanner scanner("!=");
+    auto tokens = scanner.scan_tokens();
+    ASSERT_EQ(tokens.size(), 2);
+    EXPECT_EQ(tokens[0].type, TokenType::BANG_EQUAL);
+    EXPECT_EQ(tokens[0].lexeme, "!=");
+    EXPECT_EQ(tokens[1].type, TokenType::EOF_);
+}
+
+TEST(ScannerTest, SingleEqual) {
+    Scanner scanner("=");
+    auto tokens = scanner.scan_tokens();
+    ASSERT_EQ(tokens.size(), 2);
+    EXPECT_EQ(tokens[0].type, TokenType::EQUAL);
+    EXPECT_EQ(tokens[0].lexeme, "=");
+    EXPECT_EQ(tokens[1].type, TokenType::EOF_);
+}
+
+TEST(ScannerTest, EqualEqual) {
+    Scanner scanner("==");
+    auto tokens = scanner.scan_tokens();
+    ASSERT_EQ(tokens.size(), 2);
+    EXPECT_EQ(tokens[0].type, TokenType::EQUAL_EQUAL);
+    EXPECT_EQ(tokens[0].lexeme, "==");
+    EXPECT_EQ(tokens[1].type, TokenType::EOF_);
+}
+
+TEST(ScannerTest, SingleLess) {
+    Scanner scanner("<");
+    auto tokens = scanner.scan_tokens();
+    ASSERT_EQ(tokens.size(), 2);
+    EXPECT_EQ(tokens[0].type, TokenType::LESS);
+    EXPECT_EQ(tokens[0].lexeme, "<");
+    EXPECT_EQ(tokens[1].type, TokenType::EOF_);
+}
+
+TEST(ScannerTest, LessEqual) {
+    Scanner scanner("<=");
+    auto tokens = scanner.scan_tokens();
+    ASSERT_EQ(tokens.size(), 2);
+    EXPECT_EQ(tokens[0].type, TokenType::LESS_EQUAL);
+    EXPECT_EQ(tokens[0].lexeme, "<=");
+    EXPECT_EQ(tokens[1].type, TokenType::EOF_);
+}
+
+TEST(ScannerTest, SingleGreater) {
+    Scanner scanner(">");
+    auto tokens = scanner.scan_tokens();
+    ASSERT_EQ(tokens.size(), 2);
+    EXPECT_EQ(tokens[0].type, TokenType::GREATER);
+    EXPECT_EQ(tokens[0].lexeme, ">");
+    EXPECT_EQ(tokens[1].type, TokenType::EOF_);
+}
+
+TEST(ScannerTest, GreaterEqual) {
+    Scanner scanner(">=");
+    auto tokens = scanner.scan_tokens();
+    ASSERT_EQ(tokens.size(), 2);
+    EXPECT_EQ(tokens[0].type, TokenType::GREATER_EQUAL);
+    EXPECT_EQ(tokens[0].lexeme, ">=");
+    EXPECT_EQ(tokens[1].type, TokenType::EOF_);
+}
