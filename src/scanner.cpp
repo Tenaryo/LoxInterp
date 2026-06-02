@@ -34,8 +34,12 @@ auto Scanner::peek() const -> char {
 }
 
 auto Scanner::add_token(TokenType type) -> void {
+    add_token(type, std::monostate{});
+}
+
+auto Scanner::add_token(TokenType type, LoxLiteral literal) -> void {
     std::string lexeme = source_.substr(start_, current_ - start_);
-    tokens_.push_back({type, std::move(lexeme), std::monostate{}, line_});
+    tokens_.push_back({type, std::move(lexeme), std::move(literal), line_});
 }
 
 auto Scanner::scan_token() -> void {
@@ -48,6 +52,22 @@ auto Scanner::scan_token() -> void {
     case '\n':
         line_++;
         break;
+    case '"': {
+        while (peek() != '"' && !is_at_end()) {
+            if (peek() == '\n') {
+                line_++;
+            }
+            advance();
+        }
+        if (is_at_end()) {
+            error(line_, "Unterminated string.");
+            return;
+        }
+        advance();
+        std::string value = source_.substr(start_ + 1, current_ - start_ - 2);
+        add_token(TokenType::STRING, std::move(value));
+        break;
+    }
     case '(':
         add_token(TokenType::LEFT_PAREN);
         break;
@@ -162,6 +182,8 @@ auto format_token(const Token& token) -> std::string {
             return "LESS_EQUAL";
         case TokenType::SLASH:
             return "SLASH";
+        case TokenType::STRING:
+            return "STRING";
         case TokenType::EOF_:
             return "EOF";
         }

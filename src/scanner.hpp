@@ -24,6 +24,7 @@ enum class TokenType {
     LESS,
     LESS_EQUAL,
     SLASH,
+    STRING,
     EOF_,
 };
 
@@ -48,6 +49,7 @@ class Scanner {
     auto advance() -> char;
     auto peek() const -> char;
     auto add_token(TokenType type) -> void;
+    auto add_token(TokenType type, LoxLiteral literal) -> void;
     auto scan_token() -> void;
     auto error(int line, std::string_view message) -> void;
     auto match(char expected) -> bool;

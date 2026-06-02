@@ -279,3 +279,34 @@ TEST(ScannerTest, CommentAfterCodeDoesNotSkipNewline) {
     EXPECT_EQ(tokens[1].type, TokenType::RIGHT_PAREN);
     EXPECT_EQ(tokens[2].type, TokenType::EOF_);
 }
+
+TEST(ScannerTest, StringLiteral) {
+    Scanner scanner("\"foo baz\"");
+    auto tokens = scanner.scan_tokens();
+    ASSERT_EQ(tokens.size(), 2);
+    EXPECT_EQ(tokens[0].type, TokenType::STRING);
+    EXPECT_EQ(tokens[0].lexeme, "\"foo baz\"");
+    EXPECT_EQ(tokens[1].type, TokenType::EOF_);
+    auto* val = std::get_if<std::string>(&tokens[0].literal);
+    ASSERT_NE(val, nullptr);
+    EXPECT_EQ(*val, "foo baz");
+}
+
+TEST(ScannerTest, EmptyString) {
+    Scanner scanner("\"\"");
+    auto tokens = scanner.scan_tokens();
+    ASSERT_EQ(tokens.size(), 2);
+    EXPECT_EQ(tokens[0].type, TokenType::STRING);
+    EXPECT_EQ(tokens[0].lexeme, "\"\"");
+    auto* val = std::get_if<std::string>(&tokens[0].literal);
+    ASSERT_NE(val, nullptr);
+    EXPECT_TRUE(val->empty());
+}
+
+TEST(ScannerTest, UnterminatedString) {
+    Scanner scanner("\"bar");
+    auto tokens = scanner.scan_tokens();
+    EXPECT_TRUE(scanner.has_errors());
+    ASSERT_EQ(tokens.size(), 1);
+    EXPECT_EQ(tokens[0].type, TokenType::EOF_);
+}
