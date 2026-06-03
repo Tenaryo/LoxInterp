@@ -10,7 +10,17 @@ auto Parser::parse() -> ast::Expr {
 }
 
 auto Parser::expression() -> ast::Expr {
-    return unary();
+    return factor();
+}
+
+auto Parser::factor() -> ast::Expr {
+    auto expr = unary();
+    while (match(TokenType::SLASH) || match(TokenType::STAR)) {
+        Token op = previous();
+        auto right = unary();
+        expr = std::make_unique<ast::Binary>(std::move(expr), op, std::move(right));
+    }
+    return expr;
 }
 
 auto Parser::unary() -> ast::Expr {
@@ -110,6 +120,9 @@ auto print_ast(const ast::Expr& expr) -> std::string {
             }
             if constexpr (std::is_same_v<T, std::unique_ptr<ast::Unary>>) {
                 return "(" + node->op.lexeme + " " + print_ast(node->right) + ")";
+            }
+            if constexpr (std::is_same_v<T, std::unique_ptr<ast::Binary>>) {
+                return "(" + node->op.lexeme + " " + print_ast(node->left) + " " + print_ast(node->right) + ")";
             }
             return "";
         },

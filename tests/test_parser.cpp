@@ -82,3 +82,19 @@ TEST(ParserTest, ParseDoubleUnary) {
     auto expr = parser.parse();
     EXPECT_EQ(print_ast(expr), "(! (! false))");
 }
+
+TEST(ParserTest, ParseMultiplication) {
+    Scanner scanner("16 * 38");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto expr = parser.parse();
+    EXPECT_EQ(print_ast(expr), "(* 16.0 38.0)");
+}
+
+TEST(ParserTest, ParseDivision) {
+    Scanner scanner("16 * 38 / 58");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto expr = parser.parse();
+    EXPECT_EQ(print_ast(expr), "(/ (* 16.0 38.0) 58.0)");
+}
