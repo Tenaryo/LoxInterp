@@ -169,6 +169,17 @@ auto execute(const ast::Stmt& stmt, Environment& env) -> void {
                            execute(*if_stmt->else_branch, env);
                        }
                    },
+                   [&](const std::unique_ptr<ast::WhileStmt>& while_stmt) {
+                       while (true) {
+                           auto cond = evaluate(while_stmt->condition, env);
+                           bool is_truthy = !(std::holds_alternative<std::monostate>(cond)
+                                              || (std::holds_alternative<bool>(cond) && !std::get<bool>(cond)));
+                           if (!is_truthy) {
+                               break;
+                           }
+                           execute(while_stmt->body, env);
+                       }
+                   },
                },
                stmt);
 }

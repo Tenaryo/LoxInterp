@@ -67,12 +67,14 @@ struct ExprStmt;
 struct VarStmt;
 struct BlockStmt;
 struct IfStmt;
+struct WhileStmt;
 
 using Stmt = std::variant<std::unique_ptr<PrintStmt>,
                           std::unique_ptr<ExprStmt>,
                           std::unique_ptr<VarStmt>,
                           std::unique_ptr<BlockStmt>,
-                          std::unique_ptr<IfStmt>>;
+                          std::unique_ptr<IfStmt>,
+                          std::unique_ptr<WhileStmt>>;
 
 struct PrintStmt {
     Expr expression;
@@ -95,6 +97,11 @@ struct IfStmt {
     Expr condition;
     Stmt then_branch;
     std::optional<Stmt> else_branch;
+};
+
+struct WhileStmt {
+    Expr condition;
+    Stmt body;
 };
 
 } // namespace ast

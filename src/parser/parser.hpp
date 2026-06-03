@@ -27,6 +27,7 @@ class Parser {
     auto var_declaration() -> ast::Stmt;
     auto block() -> ast::Stmt;
     auto if_statement() -> ast::Stmt;
+    auto while_statement() -> ast::Stmt;
     auto expression() -> ast::Expr;
     auto assignment() -> ast::Expr;
     auto logic_or() -> ast::Expr;

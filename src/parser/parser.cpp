@@ -41,6 +41,9 @@ auto Parser::statement() -> ast::Stmt {
     if (match(TokenType::IF)) {
         return if_statement();
     }
+    if (match(TokenType::WHILE)) {
+        return while_statement();
+    }
     return expr_statement();
 }
 
@@ -87,6 +90,14 @@ auto Parser::if_statement() -> ast::Stmt {
         else_branch = statement();
     }
     return std::make_unique<ast::IfStmt>(std::move(condition), std::move(then_branch), std::move(else_branch));
+}
+
+auto Parser::while_statement() -> ast::Stmt {
+    consume(TokenType::LEFT_PAREN, "Expect '(' after 'while'.");
+    auto condition = expression();
+    consume(TokenType::RIGHT_PAREN, "Expect ')' after while condition.");
+    auto body = statement();
+    return std::make_unique<ast::WhileStmt>(std::move(condition), std::move(body));
 }
 
 auto Parser::has_errors() const -> bool {
