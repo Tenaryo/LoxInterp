@@ -123,3 +123,11 @@ TEST(EvaluatorTest, EvaluateAddSubtract) {
     auto result = evaluate(parser.parse());
     EXPECT_EQ(format_value(result), "75");
 }
+
+TEST(EvaluatorTest, EvaluateStringConcat) {
+    Scanner scanner("\"hello\" + \" world!\"");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto result = evaluate(parser.parse());
+    EXPECT_EQ(format_value(result), "hello world!");
+}

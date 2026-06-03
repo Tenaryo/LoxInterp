@@ -28,6 +28,13 @@ auto evaluate(const ast::Expr& expr) -> LoxLiteral {
             [](const std::unique_ptr<ast::Binary>& bin) -> LoxLiteral {
                 auto left = evaluate(bin->left);
                 auto right = evaluate(bin->right);
+                if (bin->op.type == TokenType::PLUS) {
+                    const auto* lstr = std::get_if<std::string>(&left);
+                    const auto* rstr = std::get_if<std::string>(&right);
+                    if (lstr != nullptr && rstr != nullptr) {
+                        return *lstr + *rstr;
+                    }
+                }
                 const auto* lhs = std::get_if<double>(&left);
                 const auto* rhs = std::get_if<double>(&right);
                 if (lhs == nullptr || rhs == nullptr) {
