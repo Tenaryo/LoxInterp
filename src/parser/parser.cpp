@@ -35,6 +35,9 @@ auto Parser::statement() -> ast::Stmt {
     if (match(TokenType::VAR)) {
         return var_declaration();
     }
+    if (match(TokenType::LEFT_BRACE)) {
+        return block();
+    }
     return expr_statement();
 }
 
@@ -60,6 +63,15 @@ auto Parser::var_declaration() -> ast::Stmt {
 
     consume(TokenType::SEMICOLON, "Expect ';' after variable declaration.");
     return std::make_unique<ast::VarStmt>(name, std::move(initializer));
+}
+
+auto Parser::block() -> ast::Stmt {
+    std::vector<ast::Stmt> statements;
+    while (!check(TokenType::RIGHT_BRACE) && !is_at_end()) {
+        statements.push_back(statement());
+    }
+    consume(TokenType::RIGHT_BRACE, "Expect '}' after block.");
+    return std::make_unique<ast::BlockStmt>(std::move(statements));
 }
 
 auto Parser::has_errors() const -> bool {

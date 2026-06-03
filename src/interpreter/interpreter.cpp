@@ -126,6 +126,11 @@ auto execute(const ast::Stmt& stmt, Environment& env) -> void {
                        auto value = evaluate(var_stmt->initializer, env);
                        env.define(var_stmt->name.lexeme, std::move(value));
                    },
+                   [&](const std::unique_ptr<ast::BlockStmt>& block) {
+                       for (const auto& s : block->statements) {
+                           execute(s, env);
+                       }
+                   },
                },
                stmt);
 }

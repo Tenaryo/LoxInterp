@@ -56,8 +56,12 @@ struct Assign {
 struct PrintStmt;
 struct ExprStmt;
 struct VarStmt;
+struct BlockStmt;
 
-using Stmt = std::variant<std::unique_ptr<PrintStmt>, std::unique_ptr<ExprStmt>, std::unique_ptr<VarStmt>>;
+using Stmt = std::variant<std::unique_ptr<PrintStmt>,
+                          std::unique_ptr<ExprStmt>,
+                          std::unique_ptr<VarStmt>,
+                          std::unique_ptr<BlockStmt>>;
 
 struct PrintStmt {
     Expr expression;
@@ -70,6 +74,10 @@ struct ExprStmt {
 struct VarStmt {
     Token name;
     Expr initializer;
+};
+
+struct BlockStmt {
+    std::vector<Stmt> statements;
 };
 
 } // namespace ast
