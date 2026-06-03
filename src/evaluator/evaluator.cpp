@@ -22,12 +22,12 @@ auto format_value(const LoxLiteral& value) -> std::string {
     if (const auto* val = std::get_if<double>(&value)) {
         double v = *val;
         if (v == std::floor(v) && !std::isinf(v)) {
-            return std::to_string(static_cast<long long>(v)) + ".0";
+            return std::to_string(static_cast<long long>(v));
         }
         std::string s = std::to_string(v);
         s.erase(s.find_last_not_of('0') + 1);
         if (s.back() == '.') {
-            s += '0';
+            s.pop_back();
         }
         return s;
     }
