@@ -44,6 +44,7 @@ class Parser {
 
   private:
     auto expression() -> ast::Expr;
+    auto term() -> ast::Expr;
     auto factor() -> ast::Expr;
     auto unary() -> ast::Expr;
     auto primary() -> ast::Expr;

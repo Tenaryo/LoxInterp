@@ -10,7 +10,17 @@ auto Parser::parse() -> ast::Expr {
 }
 
 auto Parser::expression() -> ast::Expr {
-    return factor();
+    return term();
+}
+
+auto Parser::term() -> ast::Expr {
+    auto expr = factor();
+    while (match(TokenType::MINUS) || match(TokenType::PLUS)) {
+        Token op = previous();
+        auto right = factor();
+        expr = std::make_unique<ast::Binary>(std::move(expr), op, std::move(right));
+    }
+    return expr;
 }
 
 auto Parser::factor() -> ast::Expr {

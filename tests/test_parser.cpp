@@ -98,3 +98,19 @@ TEST(ParserTest, ParseDivision) {
     auto expr = parser.parse();
     EXPECT_EQ(print_ast(expr), "(/ (* 16.0 38.0) 58.0)");
 }
+
+TEST(ParserTest, ParseAddition) {
+    Scanner scanner("52 + 80 - 94");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto expr = parser.parse();
+    EXPECT_EQ(print_ast(expr), "(- (+ 52.0 80.0) 94.0)");
+}
+
+TEST(ParserTest, ParseAddMultPrecedence) {
+    Scanner scanner("2 + 3 * 4");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto expr = parser.parse();
+    EXPECT_EQ(print_ast(expr), "(+ 2.0 (* 3.0 4.0))");
+}
