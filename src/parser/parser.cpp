@@ -98,7 +98,7 @@ auto Parser::expression() -> ast::Expr {
 }
 
 auto Parser::assignment() -> ast::Expr {
-    auto expr = equality();
+    auto expr = logic_or();
     if (match(TokenType::EQUAL)) {
         Token equals = previous();
         auto value = assignment();
@@ -108,6 +108,20 @@ auto Parser::assignment() -> ast::Expr {
         error(equals, "Invalid assignment target.");
     }
     return expr;
+}
+
+auto Parser::logic_or() -> ast::Expr {
+    auto expr = logic_and();
+    while (match(TokenType::OR)) {
+        Token op = previous();
+        auto right = logic_and();
+        expr = std::make_unique<ast::Logical>(std::move(expr), op, std::move(right));
+    }
+    return expr;
+}
+
+auto Parser::logic_and() -> ast::Expr {
+    return equality();
 }
 
 auto Parser::equality() -> ast::Expr {
@@ -302,6 +316,10 @@ auto print_ast(const ast::Expr& expr) -> std::string {
                           [&](const std::unique_ptr<ast::Variable>& var) -> std::string { return var->name.lexeme; },
                           [&](const std::unique_ptr<ast::Assign>& assign) -> std::string {
                               return assign->name.lexeme + " = " + print_ast(assign->value);
+                          },
+                          [&](const std::unique_ptr<ast::Logical>& logical) -> std::string {
+                              return "(" + print_ast(logical->left) + " " + logical->op.lexeme + " "
+                                     + print_ast(logical->right) + ")";
                           },
                       },
                       expr);

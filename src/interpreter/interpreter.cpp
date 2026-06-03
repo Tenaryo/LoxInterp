@@ -114,6 +114,23 @@ auto evaluate(const ast::Expr& expr, Environment& env) -> LoxLiteral {
                 env.assign(assign->name, std::move(value));
                 return value;
             },
+            [&](const std::unique_ptr<ast::Logical>& logical) -> LoxLiteral {
+                auto left = evaluate(logical->left, env);
+                if (logical->op.type == TokenType::OR) {
+                    bool is_falsy = std::holds_alternative<std::monostate>(left)
+                                    || (std::holds_alternative<bool>(left) && !std::get<bool>(left));
+                    if (!is_falsy) {
+                        return left;
+                    }
+                } else {
+                    bool is_truthy = !(std::holds_alternative<std::monostate>(left)
+                                       || (std::holds_alternative<bool>(left) && !std::get<bool>(left)));
+                    if (!is_truthy) {
+                        return left;
+                    }
+                }
+                return evaluate(logical->right, env);
+            },
         },
         expr);
 }

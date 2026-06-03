@@ -29,6 +29,8 @@ class Parser {
     auto if_statement() -> ast::Stmt;
     auto expression() -> ast::Expr;
     auto assignment() -> ast::Expr;
+    auto logic_or() -> ast::Expr;
+    auto logic_and() -> ast::Expr;
     auto equality() -> ast::Expr;
     auto comparison() -> ast::Expr;
     auto term() -> ast::Expr;

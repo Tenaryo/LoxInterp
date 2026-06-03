@@ -16,6 +16,7 @@ struct Grouping;
 struct Unary;
 struct Variable;
 struct Assign;
+struct Logical;
 
 struct Literal {
     LoxLiteral value;
@@ -26,7 +27,8 @@ using Expr = std::variant<Literal,
                           std::unique_ptr<Grouping>,
                           std::unique_ptr<Unary>,
                           std::unique_ptr<Variable>,
-                          std::unique_ptr<Assign>>;
+                          std::unique_ptr<Assign>,
+                          std::unique_ptr<Logical>>;
 
 struct Binary {
     Expr left;
@@ -50,6 +52,12 @@ struct Variable {
 struct Assign {
     Token name;
     Expr value;
+};
+
+struct Logical {
+    Expr left;
+    Token op;
+    Expr right;
 };
 
 // Statements
