@@ -48,7 +48,7 @@ auto evaluate(const ast::Expr& expr) -> LoxLiteral {
                 const auto* lhs = std::get_if<double>(&left);
                 const auto* rhs = std::get_if<double>(&right);
                 if (lhs == nullptr || rhs == nullptr) {
-                    return std::monostate{};
+                    throw RuntimeError(bin->op, "Operands must be numbers.");
                 }
                 if (bin->op.type == TokenType::STAR) {
                     return *lhs * *rhs;

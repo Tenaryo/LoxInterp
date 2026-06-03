@@ -185,3 +185,17 @@ TEST(EvaluatorTest, RuntimeErrorUnaryMinusOnBool) {
     Parser parser(std::move(tokens));
     EXPECT_THROW(evaluate(parser.parse()), RuntimeError);
 }
+
+TEST(EvaluatorTest, RuntimeErrorBinaryMultiplyOnString) {
+    Scanner scanner("\"foo\" * 42");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    EXPECT_THROW(evaluate(parser.parse()), RuntimeError);
+}
+
+TEST(EvaluatorTest, RuntimeErrorBinaryDivideOnBool) {
+    Scanner scanner("true / 2");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    EXPECT_THROW(evaluate(parser.parse()), RuntimeError);
+}
