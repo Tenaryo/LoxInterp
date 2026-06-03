@@ -9,6 +9,9 @@
 RuntimeError::RuntimeError(const Token& tok, const std::string& msg) : std::runtime_error(msg), token(tok) {
 }
 
+Environment::Environment(Environment* enclosing) : enclosing_(enclosing) {
+}
+
 auto Environment::define(const std::string& name, LoxLiteral value) -> void {
     values_[name] = std::move(value);
 }
@@ -19,6 +22,10 @@ auto Environment::assign(const Token& name, LoxLiteral value) -> void {
         it->second = std::move(value);
         return;
     }
+    if (enclosing_ != nullptr) {
+        enclosing_->assign(name, std::move(value));
+        return;
+    }
     throw RuntimeError(name, "Undefined variable '" + name.lexeme + "'.");
 }
 
@@ -26,6 +33,9 @@ auto Environment::get(const Token& name) -> LoxLiteral {
     auto it = values_.find(name.lexeme);
     if (it != values_.end()) {
         return it->second;
+    }
+    if (enclosing_ != nullptr) {
+        return enclosing_->get(name);
     }
     throw RuntimeError(name, "Undefined variable '" + name.lexeme + "'.");
 }
@@ -127,8 +137,9 @@ auto execute(const ast::Stmt& stmt, Environment& env) -> void {
                        env.define(var_stmt->name.lexeme, std::move(value));
                    },
                    [&](const std::unique_ptr<ast::BlockStmt>& block) {
+                       Environment block_env(&env);
                        for (const auto& s : block->statements) {
-                           execute(s, env);
+                           execute(s, block_env);
                        }
                    },
                },
