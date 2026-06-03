@@ -275,3 +275,73 @@ TEST(EvaluatorTest, RunPrintExpression) {
     interpret(statements);
     EXPECT_EQ(testing::internal::GetCapturedStdout(), "36\n");
 }
+
+TEST(EvaluatorTest, RunIfTrue) {
+    Scanner scanner("if (true) print \"yes\";");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto statements = parser.parse_statements();
+    testing::internal::CaptureStdout();
+    interpret(statements);
+    EXPECT_EQ(testing::internal::GetCapturedStdout(), "yes\n");
+}
+
+TEST(EvaluatorTest, RunIfFalse) {
+    Scanner scanner("if (false) print \"no\";");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto statements = parser.parse_statements();
+    testing::internal::CaptureStdout();
+    interpret(statements);
+    EXPECT_EQ(testing::internal::GetCapturedStdout(), "");
+}
+
+TEST(EvaluatorTest, RunIfElse) {
+    Scanner scanner("if (false) print \"no\"; else print \"yes\";");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto statements = parser.parse_statements();
+    testing::internal::CaptureStdout();
+    interpret(statements);
+    EXPECT_EQ(testing::internal::GetCapturedStdout(), "yes\n");
+}
+
+TEST(EvaluatorTest, RunLogicalOr) {
+    Scanner scanner("print false or \"ok\";");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto statements = parser.parse_statements();
+    testing::internal::CaptureStdout();
+    interpret(statements);
+    EXPECT_EQ(testing::internal::GetCapturedStdout(), "ok\n");
+}
+
+TEST(EvaluatorTest, RunLogicalAnd) {
+    Scanner scanner("print true and 42;");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto statements = parser.parse_statements();
+    testing::internal::CaptureStdout();
+    interpret(statements);
+    EXPECT_EQ(testing::internal::GetCapturedStdout(), "42\n");
+}
+
+TEST(EvaluatorTest, RunWhileLoop) {
+    Scanner scanner("var x = 0; while (x < 3) { print x; x = x + 1; }");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto statements = parser.parse_statements();
+    testing::internal::CaptureStdout();
+    interpret(statements);
+    EXPECT_EQ(testing::internal::GetCapturedStdout(), "0\n1\n2\n");
+}
+
+TEST(EvaluatorTest, RunForLoop) {
+    Scanner scanner("for (var i = 0; i < 2; i = i + 1) print i;");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto statements = parser.parse_statements();
+    testing::internal::CaptureStdout();
+    interpret(statements);
+    EXPECT_EQ(testing::internal::GetCapturedStdout(), "0\n1\n");
+}
