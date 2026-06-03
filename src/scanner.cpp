@@ -153,7 +153,14 @@ auto Scanner::scan_token() -> void {
         }
         break;
     default:
-        error(line_, std::string("Unexpected character: ") + ch);
+        if (is_alpha(ch)) {
+            while (is_alphanumeric(peek())) {
+                advance();
+            }
+            add_token(TokenType::IDENTIFIER);
+        } else {
+            error(line_, std::string("Unexpected character: ") + ch);
+        }
         break;
     }
 }
@@ -176,6 +183,14 @@ auto Scanner::match(char expected) -> bool {
 
 auto Scanner::is_digit(char ch) const -> bool {
     return ch >= '0' && ch <= '9';
+}
+
+auto Scanner::is_alpha(char ch) const -> bool {
+    return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch == '_';
+}
+
+auto Scanner::is_alphanumeric(char ch) const -> bool {
+    return is_alpha(ch) || is_digit(ch);
 }
 
 auto format_token(const Token& token) -> std::string {
@@ -223,6 +238,8 @@ auto format_token(const Token& token) -> std::string {
             return "STRING";
         case TokenType::NUMBER:
             return "NUMBER";
+        case TokenType::IDENTIFIER:
+            return "IDENTIFIER";
         case TokenType::EOF_:
             return "EOF";
         }

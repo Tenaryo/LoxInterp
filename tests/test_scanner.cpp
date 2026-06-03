@@ -343,3 +343,43 @@ TEST(ScannerTest, NumberTrailingDot) {
     EXPECT_EQ(tokens[1].type, TokenType::DOT);
     EXPECT_EQ(tokens[2].type, TokenType::EOF_);
 }
+
+TEST(ScannerTest, SimpleIdentifier) {
+    Scanner scanner("foo");
+    auto tokens = scanner.scan_tokens();
+    ASSERT_EQ(tokens.size(), 2);
+    EXPECT_EQ(tokens[0].type, TokenType::IDENTIFIER);
+    EXPECT_EQ(tokens[0].lexeme, "foo");
+    EXPECT_EQ(tokens[1].type, TokenType::EOF_);
+}
+
+TEST(ScannerTest, IdentifierWithUnderscore) {
+    Scanner scanner("_hello");
+    auto tokens = scanner.scan_tokens();
+    ASSERT_EQ(tokens.size(), 2);
+    EXPECT_EQ(tokens[0].type, TokenType::IDENTIFIER);
+    EXPECT_EQ(tokens[0].lexeme, "_hello");
+    EXPECT_EQ(tokens[1].type, TokenType::EOF_);
+}
+
+TEST(ScannerTest, IdentifierWithDigits) {
+    Scanner scanner("var123");
+    auto tokens = scanner.scan_tokens();
+    ASSERT_EQ(tokens.size(), 2);
+    EXPECT_EQ(tokens[0].type, TokenType::IDENTIFIER);
+    EXPECT_EQ(tokens[0].lexeme, "var123");
+    EXPECT_EQ(tokens[1].type, TokenType::EOF_);
+}
+
+TEST(ScannerTest, MultipleIdentifiers) {
+    Scanner scanner("foo bar _hello");
+    auto tokens = scanner.scan_tokens();
+    ASSERT_EQ(tokens.size(), 4);
+    EXPECT_EQ(tokens[0].type, TokenType::IDENTIFIER);
+    EXPECT_EQ(tokens[0].lexeme, "foo");
+    EXPECT_EQ(tokens[1].type, TokenType::IDENTIFIER);
+    EXPECT_EQ(tokens[1].lexeme, "bar");
+    EXPECT_EQ(tokens[2].type, TokenType::IDENTIFIER);
+    EXPECT_EQ(tokens[2].lexeme, "_hello");
+    EXPECT_EQ(tokens[3].type, TokenType::EOF_);
+}

@@ -26,6 +26,7 @@ enum class TokenType {
     SLASH,
     STRING,
     NUMBER,
+    IDENTIFIER,
     EOF_,
 };
 
@@ -56,6 +57,8 @@ class Scanner {
     auto error(int line, std::string_view message) -> void;
     auto match(char expected) -> bool;
     auto is_digit(char ch) const -> bool;
+    auto is_alpha(char ch) const -> bool;
+    auto is_alphanumeric(char ch) const -> bool;
 
     std::string source_;
     std::size_t start_{0};
