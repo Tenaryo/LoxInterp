@@ -22,6 +22,7 @@ class Parser {
         }
     };
     auto statement() -> ast::Stmt;
+    auto declaration() -> ast::Stmt;
     auto print_statement() -> ast::Stmt;
     auto expr_statement() -> ast::Stmt;
     auto var_declaration() -> ast::Stmt;

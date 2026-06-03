@@ -20,7 +20,7 @@ auto Parser::parse_statements() -> std::vector<ast::Stmt> {
     std::vector<ast::Stmt> statements;
     while (!is_at_end()) {
         try {
-            statements.push_back(statement());
+            statements.push_back(declaration());
         } catch (const ParseError&) {
             synchronize();
         }
@@ -28,12 +28,16 @@ auto Parser::parse_statements() -> std::vector<ast::Stmt> {
     return statements;
 }
 
+auto Parser::declaration() -> ast::Stmt {
+    if (match(TokenType::VAR)) {
+        return var_declaration();
+    }
+    return statement();
+}
+
 auto Parser::statement() -> ast::Stmt {
     if (match(TokenType::PRINT)) {
         return print_statement();
-    }
-    if (match(TokenType::VAR)) {
-        return var_declaration();
     }
     if (match(TokenType::LEFT_BRACE)) {
         return block();
@@ -77,7 +81,7 @@ auto Parser::var_declaration() -> ast::Stmt {
 auto Parser::block() -> ast::Stmt {
     std::vector<ast::Stmt> statements;
     while (!check(TokenType::RIGHT_BRACE) && !is_at_end()) {
-        statements.push_back(statement());
+        statements.push_back(declaration());
     }
     consume(TokenType::RIGHT_BRACE, "Expect '}' after block.");
     return std::make_unique<ast::BlockStmt>(std::move(statements));
