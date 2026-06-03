@@ -87,11 +87,11 @@ auto main(int argc, char* argv[]) -> int {
             return kLexicalErrorExit;
         }
         Parser parser(std::move(tokens));
+        auto statements = parser.parse_statements();
+        if (parser.has_errors()) {
+            return kLexicalErrorExit;
+        }
         try {
-            auto statements = parser.parse_statements();
-            if (parser.has_errors()) {
-                return kLexicalErrorExit;
-            }
             interpret(statements);
         } catch (const RuntimeError& e) {
             std::cerr << e.what() << '\n';
