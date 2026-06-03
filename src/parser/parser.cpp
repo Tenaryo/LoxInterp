@@ -38,6 +38,9 @@ auto Parser::statement() -> ast::Stmt {
     if (match(TokenType::LEFT_BRACE)) {
         return block();
     }
+    if (match(TokenType::IF)) {
+        return if_statement();
+    }
     return expr_statement();
 }
 
@@ -72,6 +75,18 @@ auto Parser::block() -> ast::Stmt {
     }
     consume(TokenType::RIGHT_BRACE, "Expect '}' after block.");
     return std::make_unique<ast::BlockStmt>(std::move(statements));
+}
+
+auto Parser::if_statement() -> ast::Stmt {
+    consume(TokenType::LEFT_PAREN, "Expect '(' after 'if'.");
+    auto condition = expression();
+    consume(TokenType::RIGHT_PAREN, "Expect ')' after if condition.");
+    auto then_branch = statement();
+    std::optional<ast::Stmt> else_branch;
+    if (match(TokenType::ELSE)) {
+        else_branch = statement();
+    }
+    return std::make_unique<ast::IfStmt>(std::move(condition), std::move(then_branch), std::move(else_branch));
 }
 
 auto Parser::has_errors() const -> bool {

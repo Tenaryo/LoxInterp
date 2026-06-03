@@ -142,6 +142,16 @@ auto execute(const ast::Stmt& stmt, Environment& env) -> void {
                            execute(s, block_env);
                        }
                    },
+                   [&](const std::unique_ptr<ast::IfStmt>& if_stmt) {
+                       auto cond = evaluate(if_stmt->condition, env);
+                       bool is_truthy = !(std::holds_alternative<std::monostate>(cond)
+                                          || (std::holds_alternative<bool>(cond) && !std::get<bool>(cond)));
+                       if (is_truthy) {
+                           execute(if_stmt->then_branch, env);
+                       } else if (if_stmt->else_branch.has_value()) {
+                           execute(*if_stmt->else_branch, env);
+                       }
+                   },
                },
                stmt);
 }

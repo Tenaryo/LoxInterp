@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 #include <variant>
 #include <vector>
 
@@ -57,11 +58,13 @@ struct PrintStmt;
 struct ExprStmt;
 struct VarStmt;
 struct BlockStmt;
+struct IfStmt;
 
 using Stmt = std::variant<std::unique_ptr<PrintStmt>,
                           std::unique_ptr<ExprStmt>,
                           std::unique_ptr<VarStmt>,
-                          std::unique_ptr<BlockStmt>>;
+                          std::unique_ptr<BlockStmt>,
+                          std::unique_ptr<IfStmt>>;
 
 struct PrintStmt {
     Expr expression;
@@ -78,6 +81,12 @@ struct VarStmt {
 
 struct BlockStmt {
     std::vector<Stmt> statements;
+};
+
+struct IfStmt {
+    Expr condition;
+    Stmt then_branch;
+    std::optional<Stmt> else_branch;
 };
 
 } // namespace ast
