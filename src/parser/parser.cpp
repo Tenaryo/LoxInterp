@@ -138,7 +138,7 @@ auto Parser::primary() -> ast::Expr {
     }
     if (match(TokenType::LEFT_PAREN)) {
         auto expr = expression();
-        match(TokenType::RIGHT_PAREN);
+        consume(TokenType::RIGHT_PAREN, "Expect ')' after expression.");
         return std::make_unique<ast::Grouping>(std::move(expr));
     }
     throw error(peek(), "Expect expression.");
