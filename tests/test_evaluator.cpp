@@ -131,3 +131,19 @@ TEST(EvaluatorTest, EvaluateStringConcat) {
     auto result = evaluate(parser.parse());
     EXPECT_EQ(format_value(result), "hello world!");
 }
+
+TEST(EvaluatorTest, EvaluateGreater) {
+    Scanner scanner("57 > -65");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto result = evaluate(parser.parse());
+    EXPECT_EQ(format_value(result), "true");
+}
+
+TEST(EvaluatorTest, EvaluateGreaterEqual) {
+    Scanner scanner("11 >= 11");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto result = evaluate(parser.parse());
+    EXPECT_EQ(format_value(result), "true");
+}

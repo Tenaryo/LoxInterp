@@ -52,6 +52,18 @@ auto evaluate(const ast::Expr& expr) -> LoxLiteral {
                 if (bin->op.type == TokenType::MINUS) {
                     return *lhs - *rhs;
                 }
+                if (bin->op.type == TokenType::GREATER) {
+                    return *lhs > *rhs;
+                }
+                if (bin->op.type == TokenType::GREATER_EQUAL) {
+                    return *lhs >= *rhs;
+                }
+                if (bin->op.type == TokenType::LESS) {
+                    return *lhs < *rhs;
+                }
+                if (bin->op.type == TokenType::LESS_EQUAL) {
+                    return *lhs <= *rhs;
+                }
                 return std::monostate{};
             },
             [](const auto&) -> LoxLiteral { return std::monostate{}; },
