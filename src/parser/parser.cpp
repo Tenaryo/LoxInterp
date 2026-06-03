@@ -67,7 +67,20 @@ auto Parser::has_errors() const -> bool {
 }
 
 auto Parser::expression() -> ast::Expr {
-    return equality();
+    return assignment();
+}
+
+auto Parser::assignment() -> ast::Expr {
+    auto expr = equality();
+    if (match(TokenType::EQUAL)) {
+        Token equals = previous();
+        auto value = assignment();
+        if (auto* var = std::get_if<std::unique_ptr<ast::Variable>>(&expr)) {
+            return std::make_unique<ast::Assign>((*var)->name, std::move(value));
+        }
+        error(equals, "Invalid assignment target.");
+    }
+    return expr;
 }
 
 auto Parser::equality() -> ast::Expr {
@@ -260,6 +273,9 @@ auto print_ast(const ast::Expr& expr) -> std::string {
                                      + ")";
                           },
                           [&](const std::unique_ptr<ast::Variable>& var) -> std::string { return var->name.lexeme; },
+                          [&](const std::unique_ptr<ast::Assign>& assign) -> std::string {
+                              return assign->name.lexeme + " = " + print_ast(assign->value);
+                          },
                       },
                       expr);
 }

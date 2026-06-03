@@ -14,6 +14,7 @@ struct RuntimeError : std::runtime_error {
 class Environment {
   public:
     auto define(const std::string& name, LoxLiteral value) -> void;
+    auto assign(const Token& name, LoxLiteral value) -> void;
     auto get(const Token& name) -> LoxLiteral;
 
   private:

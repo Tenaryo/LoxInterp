@@ -26,6 +26,7 @@ class Parser {
     auto expr_statement() -> ast::Stmt;
     auto var_declaration() -> ast::Stmt;
     auto expression() -> ast::Expr;
+    auto assignment() -> ast::Expr;
     auto equality() -> ast::Expr;
     auto comparison() -> ast::Expr;
     auto term() -> ast::Expr;

@@ -13,6 +13,15 @@ auto Environment::define(const std::string& name, LoxLiteral value) -> void {
     values_[name] = std::move(value);
 }
 
+auto Environment::assign(const Token& name, LoxLiteral value) -> void {
+    auto it = values_.find(name.lexeme);
+    if (it != values_.end()) {
+        it->second = std::move(value);
+        return;
+    }
+    throw RuntimeError(name, "Undefined variable '" + name.lexeme + "'.");
+}
+
 auto Environment::get(const Token& name) -> LoxLiteral {
     auto it = values_.find(name.lexeme);
     if (it != values_.end()) {
@@ -90,6 +99,11 @@ auto evaluate(const ast::Expr& expr, Environment& env) -> LoxLiteral {
                 return std::monostate{};
             },
             [&](const std::unique_ptr<ast::Variable>& var) -> LoxLiteral { return env.get(var->name); },
+            [&](const std::unique_ptr<ast::Assign>& assign) -> LoxLiteral {
+                auto value = evaluate(assign->value, env);
+                env.assign(assign->name, std::move(value));
+                return value;
+            },
         },
         expr);
 }
