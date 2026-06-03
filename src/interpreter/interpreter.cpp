@@ -9,13 +9,25 @@
 RuntimeError::RuntimeError(const Token& tok, const std::string& msg) : std::runtime_error(msg), token(tok) {
 }
 
-auto evaluate(const ast::Expr& expr) -> LoxLiteral {
+auto Environment::define(const std::string& name, LoxLiteral value) -> void {
+    values_[name] = std::move(value);
+}
+
+auto Environment::get(const Token& name) -> LoxLiteral {
+    auto it = values_.find(name.lexeme);
+    if (it != values_.end()) {
+        return it->second;
+    }
+    throw RuntimeError(name, "Undefined variable '" + name.lexeme + "'.");
+}
+
+auto evaluate(const ast::Expr& expr, Environment& env) -> LoxLiteral {
     return std::visit(
         overloaded{
             [](const ast::Literal& lit) -> LoxLiteral { return lit.value; },
-            [](const std::unique_ptr<ast::Grouping>& grp) -> LoxLiteral { return evaluate(grp->expression); },
-            [](const std::unique_ptr<ast::Unary>& un) -> LoxLiteral {
-                auto right = evaluate(un->right);
+            [&](const std::unique_ptr<ast::Grouping>& grp) -> LoxLiteral { return evaluate(grp->expression, env); },
+            [&](const std::unique_ptr<ast::Unary>& un) -> LoxLiteral {
+                auto right = evaluate(un->right, env);
                 if (un->op.type == TokenType::BANG) {
                     bool is_falsy = std::holds_alternative<std::monostate>(right)
                                     || (std::holds_alternative<bool>(right) && !std::get<bool>(right));
@@ -29,22 +41,22 @@ auto evaluate(const ast::Expr& expr) -> LoxLiteral {
                 }
                 return std::monostate{};
             },
-            [](const std::unique_ptr<ast::Binary>& bin) -> LoxLiteral {
-                auto left = evaluate(bin->left);
-                auto right = evaluate(bin->right);
-                if (bin->op.type == TokenType::PLUS) {
-                    const auto* lstr = std::get_if<std::string>(&left);
-                    const auto* rstr = std::get_if<std::string>(&right);
-                    if (lstr != nullptr && rstr != nullptr) {
-                        return *lstr + *rstr;
-                    }
-                }
+            [&](const std::unique_ptr<ast::Binary>& bin) -> LoxLiteral {
+                auto left = evaluate(bin->left, env);
+                auto right = evaluate(bin->right, env);
                 if (bin->op.type == TokenType::BANG_EQUAL || bin->op.type == TokenType::EQUAL_EQUAL) {
                     bool is_equal = left == right;
                     if (bin->op.type == TokenType::BANG_EQUAL) {
                         return !is_equal;
                     }
                     return is_equal;
+                }
+                if (bin->op.type == TokenType::PLUS) {
+                    const auto* lstr = std::get_if<std::string>(&left);
+                    const auto* rstr = std::get_if<std::string>(&right);
+                    if (lstr != nullptr && rstr != nullptr) {
+                        return *lstr + *rstr;
+                    }
                 }
                 const auto* lhs = std::get_if<double>(&left);
                 const auto* rhs = std::get_if<double>(&right);
@@ -77,24 +89,29 @@ auto evaluate(const ast::Expr& expr) -> LoxLiteral {
                 }
                 return std::monostate{};
             },
-            [](const auto&) -> LoxLiteral { return std::monostate{}; },
+            [&](const std::unique_ptr<ast::Variable>& var) -> LoxLiteral { return env.get(var->name); },
         },
         expr);
 }
 
 auto interpret(const std::vector<ast::Stmt>& statements) -> void {
+    Environment env;
     for (const auto& stmt : statements) {
-        execute(stmt);
+        execute(stmt, env);
     }
 }
 
-auto execute(const ast::Stmt& stmt) -> void {
+auto execute(const ast::Stmt& stmt, Environment& env) -> void {
     std::visit(overloaded{
-                   [](const std::unique_ptr<ast::PrintStmt>& print) {
-                       auto value = evaluate(print->expression);
+                   [&](const std::unique_ptr<ast::PrintStmt>& print) {
+                       auto value = evaluate(print->expression, env);
                        std::cout << format_value(value) << '\n';
                    },
-                   [](const std::unique_ptr<ast::ExprStmt>& expr_stmt) { evaluate(expr_stmt->expression); },
+                   [&](const std::unique_ptr<ast::ExprStmt>& expr_stmt) { evaluate(expr_stmt->expression, env); },
+                   [&](const std::unique_ptr<ast::VarStmt>& var_stmt) {
+                       auto value = evaluate(var_stmt->initializer, env);
+                       env.define(var_stmt->name.lexeme, std::move(value));
+                   },
                },
                stmt);
 }

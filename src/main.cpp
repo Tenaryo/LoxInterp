@@ -71,7 +71,8 @@ auto main(int argc, char* argv[]) -> int {
             return kLexicalErrorExit;
         }
         try {
-            auto result = evaluate(expr);
+            Environment env;
+            auto result = evaluate(expr, env);
             std::cout << format_value(result) << '\n';
         } catch (const RuntimeError& e) {
             std::cerr << e.what() << '\n';

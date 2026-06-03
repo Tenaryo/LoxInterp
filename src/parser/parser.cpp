@@ -32,6 +32,9 @@ auto Parser::statement() -> ast::Stmt {
     if (match(TokenType::PRINT)) {
         return print_statement();
     }
+    if (match(TokenType::VAR)) {
+        return var_declaration();
+    }
     return expr_statement();
 }
 
@@ -45,6 +48,18 @@ auto Parser::expr_statement() -> ast::Stmt {
     auto expr = expression();
     consume(TokenType::SEMICOLON, "Expect ';' after expression.");
     return std::make_unique<ast::ExprStmt>(std::move(expr));
+}
+
+auto Parser::var_declaration() -> ast::Stmt {
+    Token name = consume(TokenType::IDENTIFIER, "Expect variable name.");
+
+    ast::Expr initializer = ast::Literal{std::monostate{}};
+    if (match(TokenType::EQUAL)) {
+        initializer = expression();
+    }
+
+    consume(TokenType::SEMICOLON, "Expect ';' after variable declaration.");
+    return std::make_unique<ast::VarStmt>(name, std::move(initializer));
 }
 
 auto Parser::has_errors() const -> bool {
@@ -117,6 +132,9 @@ auto Parser::primary() -> ast::Expr {
     }
     if (match(TokenType::NUMBER) || match(TokenType::STRING)) {
         return ast::Literal{previous().literal};
+    }
+    if (match(TokenType::IDENTIFIER)) {
+        return std::make_unique<ast::Variable>(previous());
     }
     if (match(TokenType::LEFT_PAREN)) {
         auto expr = expression();
@@ -241,6 +259,7 @@ auto print_ast(const ast::Expr& expr) -> std::string {
                               return "(" + bin->op.lexeme + " " + print_ast(bin->left) + " " + print_ast(bin->right)
                                      + ")";
                           },
+                          [&](const std::unique_ptr<ast::Variable>& var) -> std::string { return var->name.lexeme; },
                       },
                       expr);
 }
