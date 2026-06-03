@@ -44,6 +44,9 @@ auto Parser::statement() -> ast::Stmt {
     if (match(TokenType::WHILE)) {
         return while_statement();
     }
+    if (match(TokenType::FOR)) {
+        return for_statement();
+    }
     return expr_statement();
 }
 
@@ -98,6 +101,50 @@ auto Parser::while_statement() -> ast::Stmt {
     consume(TokenType::RIGHT_PAREN, "Expect ')' after while condition.");
     auto body = statement();
     return std::make_unique<ast::WhileStmt>(std::move(condition), std::move(body));
+}
+
+auto Parser::for_statement() -> ast::Stmt {
+    consume(TokenType::LEFT_PAREN, "Expect '(' after 'for'.");
+
+    std::optional<ast::Stmt> initializer;
+    if (match(TokenType::SEMICOLON)) {
+    } else if (match(TokenType::VAR)) {
+        initializer = var_declaration();
+    } else {
+        initializer = expr_statement();
+    }
+
+    std::optional<ast::Expr> condition;
+    if (!check(TokenType::SEMICOLON)) {
+        condition = expression();
+    }
+    consume(TokenType::SEMICOLON, "Expect ';' after loop condition.");
+
+    std::optional<ast::Expr> increment;
+    if (!check(TokenType::RIGHT_PAREN)) {
+        increment = expression();
+    }
+    consume(TokenType::RIGHT_PAREN, "Expect ')' after for clauses.");
+
+    auto body = statement();
+
+    std::vector<ast::Stmt> while_body_stmts;
+    while_body_stmts.push_back(std::move(body));
+    if (increment.has_value()) {
+        while_body_stmts.push_back(std::make_unique<ast::ExprStmt>(std::move(*increment)));
+    }
+
+    ast::Expr cond = condition.has_value() ? std::move(*condition) : ast::Literal{true};
+    auto while_stmt = std::make_unique<ast::WhileStmt>(std::move(cond),
+                                                       std::make_unique<ast::BlockStmt>(std::move(while_body_stmts)));
+
+    if (initializer.has_value()) {
+        std::vector<ast::Stmt> outer_stmts;
+        outer_stmts.push_back(std::move(*initializer));
+        outer_stmts.push_back(std::move(while_stmt));
+        return std::make_unique<ast::BlockStmt>(std::move(outer_stmts));
+    }
+    return while_stmt;
 }
 
 auto Parser::has_errors() const -> bool {
