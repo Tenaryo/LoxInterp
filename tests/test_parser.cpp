@@ -130,3 +130,27 @@ TEST(ParserTest, ParseMixedComparison) {
     auto expr = parser.parse();
     EXPECT_EQ(print_ast(expr), "(<= 1.0 2.0)");
 }
+
+TEST(ParserTest, ParseEquality) {
+    Scanner scanner("\"baz\" == \"baz\"");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto expr = parser.parse();
+    EXPECT_EQ(print_ast(expr), "(== baz baz)");
+}
+
+TEST(ParserTest, ParseInequality) {
+    Scanner scanner("42 != 42");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto expr = parser.parse();
+    EXPECT_EQ(print_ast(expr), "(!= 42.0 42.0)");
+}
+
+TEST(ParserTest, ParseFullPrecedence) {
+    Scanner scanner("1 + 2 * 3 == 4");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto expr = parser.parse();
+    EXPECT_EQ(print_ast(expr), "(== (+ 1.0 (* 2.0 3.0)) 4.0)");
+}

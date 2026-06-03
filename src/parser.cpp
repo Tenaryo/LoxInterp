@@ -10,7 +10,17 @@ auto Parser::parse() -> ast::Expr {
 }
 
 auto Parser::expression() -> ast::Expr {
-    return comparison();
+    return equality();
+}
+
+auto Parser::equality() -> ast::Expr {
+    auto expr = comparison();
+    while (match(TokenType::BANG_EQUAL) || match(TokenType::EQUAL_EQUAL)) {
+        Token op = previous();
+        auto right = comparison();
+        expr = std::make_unique<ast::Binary>(std::move(expr), op, std::move(right));
+    }
+    return expr;
 }
 
 auto Parser::comparison() -> ast::Expr {
