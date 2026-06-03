@@ -51,3 +51,19 @@ TEST(EvaluatorTest, EvaluateString) {
     auto result = evaluate(parser.parse());
     EXPECT_EQ(format_value(result), "hello world!");
 }
+
+TEST(EvaluatorTest, EvaluateGrouping) {
+    Scanner scanner("(\"hello world!\")");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto result = evaluate(parser.parse());
+    EXPECT_EQ(format_value(result), "hello world!");
+}
+
+TEST(EvaluatorTest, EvaluateNestedGrouping) {
+    Scanner scanner("((false))");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto result = evaluate(parser.parse());
+    EXPECT_EQ(format_value(result), "false");
+}

@@ -5,11 +5,13 @@
 #include "util/overloaded.hpp"
 
 auto evaluate(const ast::Expr& expr) -> LoxLiteral {
-    return std::visit(overloaded{
-                          [](const ast::Literal& lit) -> LoxLiteral { return lit.value; },
-                          [](const auto&) -> LoxLiteral { return std::monostate{}; },
-                      },
-                      expr);
+    return std::visit(
+        overloaded{
+            [](const ast::Literal& lit) -> LoxLiteral { return lit.value; },
+            [](const std::unique_ptr<ast::Grouping>& grp) -> LoxLiteral { return evaluate(grp->expression); },
+            [](const auto&) -> LoxLiteral { return std::monostate{}; },
+        },
+        expr);
 }
 
 auto format_value(const LoxLiteral& value) -> std::string {
