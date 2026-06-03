@@ -25,6 +25,22 @@ auto evaluate(const ast::Expr& expr) -> LoxLiteral {
                 }
                 return std::monostate{};
             },
+            [](const std::unique_ptr<ast::Binary>& bin) -> LoxLiteral {
+                auto left = evaluate(bin->left);
+                auto right = evaluate(bin->right);
+                const auto* lhs = std::get_if<double>(&left);
+                const auto* rhs = std::get_if<double>(&right);
+                if (lhs == nullptr || rhs == nullptr) {
+                    return std::monostate{};
+                }
+                if (bin->op.type == TokenType::STAR) {
+                    return *lhs * *rhs;
+                }
+                if (bin->op.type == TokenType::SLASH) {
+                    return *lhs / *rhs;
+                }
+                return std::monostate{};
+            },
             [](const auto&) -> LoxLiteral { return std::monostate{}; },
         },
         expr);

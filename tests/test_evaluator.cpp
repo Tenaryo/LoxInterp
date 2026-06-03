@@ -99,3 +99,19 @@ TEST(EvaluatorTest, EvaluateUnaryBangNestedFalse) {
     auto result = evaluate(parser.parse());
     EXPECT_EQ(format_value(result), "true");
 }
+
+TEST(EvaluatorTest, EvaluateMultiply) {
+    Scanner scanner("18 * 3 / (3 * 6)");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto result = evaluate(parser.parse());
+    EXPECT_EQ(format_value(result), "3");
+}
+
+TEST(EvaluatorTest, EvaluateDivide) {
+    Scanner scanner("42 / 5");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto result = evaluate(parser.parse());
+    EXPECT_EQ(format_value(result), "8.4");
+}
