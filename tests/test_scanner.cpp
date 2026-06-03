@@ -383,3 +383,43 @@ TEST(ScannerTest, MultipleIdentifiers) {
     EXPECT_EQ(tokens[2].lexeme, "_hello");
     EXPECT_EQ(tokens[3].type, TokenType::EOF_);
 }
+
+TEST(ScannerTest, KeywordAnd) {
+    Scanner scanner("and");
+    auto tokens = scanner.scan_tokens();
+    ASSERT_EQ(tokens.size(), 2);
+    EXPECT_EQ(tokens[0].type, TokenType::AND);
+    EXPECT_EQ(tokens[0].lexeme, "and");
+}
+
+TEST(ScannerTest, KeywordIf) {
+    Scanner scanner("if");
+    auto tokens = scanner.scan_tokens();
+    ASSERT_EQ(tokens.size(), 2);
+    EXPECT_EQ(tokens[0].type, TokenType::IF);
+    EXPECT_EQ(tokens[0].lexeme, "if");
+}
+
+TEST(ScannerTest, KeywordTrue) {
+    Scanner scanner("true");
+    auto tokens = scanner.scan_tokens();
+    ASSERT_EQ(tokens.size(), 2);
+    EXPECT_EQ(tokens[0].type, TokenType::TRUE_);
+    EXPECT_EQ(tokens[0].lexeme, "true");
+}
+
+TEST(ScannerTest, KeywordVar) {
+    Scanner scanner("var");
+    auto tokens = scanner.scan_tokens();
+    ASSERT_EQ(tokens.size(), 2);
+    EXPECT_EQ(tokens[0].type, TokenType::VAR);
+    EXPECT_EQ(tokens[0].lexeme, "var");
+}
+
+TEST(ScannerTest, IdNotKeyword) {
+    Scanner scanner("andy");
+    auto tokens = scanner.scan_tokens();
+    ASSERT_EQ(tokens.size(), 2);
+    EXPECT_EQ(tokens[0].type, TokenType::IDENTIFIER);
+    EXPECT_EQ(tokens[0].lexeme, "andy");
+}

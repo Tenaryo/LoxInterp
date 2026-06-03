@@ -3,6 +3,30 @@
 #include <charconv>
 #include <cmath>
 #include <iostream>
+#include <unordered_map>
+
+namespace {
+
+const std::unordered_map<std::string, TokenType> kKeywords = {
+    {"and", TokenType::AND},
+    {"class", TokenType::CLASS},
+    {"else", TokenType::ELSE},
+    {"false", TokenType::FALSE_},
+    {"for", TokenType::FOR},
+    {"fun", TokenType::FUN},
+    {"if", TokenType::IF},
+    {"nil", TokenType::NIL},
+    {"or", TokenType::OR},
+    {"print", TokenType::PRINT},
+    {"return", TokenType::RETURN},
+    {"super", TokenType::SUPER},
+    {"this", TokenType::THIS},
+    {"true", TokenType::TRUE_},
+    {"var", TokenType::VAR},
+    {"while", TokenType::WHILE},
+};
+
+} // namespace
 
 Scanner::Scanner(std::string source) : source_(std::move(source)) {
 }
@@ -157,7 +181,9 @@ auto Scanner::scan_token() -> void {
             while (is_alphanumeric(peek())) {
                 advance();
             }
-            add_token(TokenType::IDENTIFIER);
+            std::string lexeme = source_.substr(start_, current_ - start_);
+            auto it = kKeywords.find(lexeme);
+            add_token((it != kKeywords.end()) ? it->second : TokenType::IDENTIFIER);
         } else {
             error(line_, std::string("Unexpected character: ") + ch);
         }
@@ -240,6 +266,38 @@ auto format_token(const Token& token) -> std::string {
             return "NUMBER";
         case TokenType::IDENTIFIER:
             return "IDENTIFIER";
+        case TokenType::AND:
+            return "AND";
+        case TokenType::CLASS:
+            return "CLASS";
+        case TokenType::ELSE:
+            return "ELSE";
+        case TokenType::FALSE_:
+            return "FALSE";
+        case TokenType::FOR:
+            return "FOR";
+        case TokenType::FUN:
+            return "FUN";
+        case TokenType::IF:
+            return "IF";
+        case TokenType::NIL:
+            return "NIL";
+        case TokenType::OR:
+            return "OR";
+        case TokenType::PRINT:
+            return "PRINT";
+        case TokenType::RETURN:
+            return "RETURN";
+        case TokenType::SUPER:
+            return "SUPER";
+        case TokenType::THIS:
+            return "THIS";
+        case TokenType::TRUE_:
+            return "TRUE";
+        case TokenType::VAR:
+            return "VAR";
+        case TokenType::WHILE:
+            return "WHILE";
         case TokenType::EOF_:
             return "EOF";
         }
