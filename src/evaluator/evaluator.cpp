@@ -1,6 +1,7 @@
 #include "evaluator/evaluator.hpp"
 
 #include <cmath>
+#include <iostream>
 
 #include "scanner/scanner.hpp"
 #include "util/overloaded.hpp"
@@ -79,6 +80,23 @@ auto evaluate(const ast::Expr& expr) -> LoxLiteral {
             [](const auto&) -> LoxLiteral { return std::monostate{}; },
         },
         expr);
+}
+
+auto interpret(const std::vector<ast::Stmt>& statements) -> void {
+    for (const auto& stmt : statements) {
+        execute(stmt);
+    }
+}
+
+auto execute(const ast::Stmt& stmt) -> void {
+    std::visit(overloaded{
+                   [](const std::unique_ptr<ast::PrintStmt>& print) {
+                       auto value = evaluate(print->expression);
+                       std::cout << format_value(value) << '\n';
+                   },
+                   [](const std::unique_ptr<ast::ExprStmt>& expr_stmt) { evaluate(expr_stmt->expression); },
+               },
+               stmt);
 }
 
 auto format_value(const LoxLiteral& value) -> std::string {

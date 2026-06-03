@@ -37,11 +37,29 @@ struct Unary {
 
 } // namespace ast
 
+namespace ast {
+
+struct PrintStmt;
+struct ExprStmt;
+
+using Stmt = std::variant<std::unique_ptr<PrintStmt>, std::unique_ptr<ExprStmt>>;
+
+struct PrintStmt {
+    Expr expression;
+};
+
+struct ExprStmt {
+    Expr expression;
+};
+
+} // namespace ast
+
 class Parser {
   public:
     explicit Parser(std::vector<Token> tokens);
 
     auto parse() -> ast::Expr;
+    auto parse_statements() -> std::vector<ast::Stmt>;
     auto has_errors() const -> bool;
 
   private:
@@ -49,6 +67,9 @@ class Parser {
         ParseError() : std::runtime_error("") {
         }
     };
+    auto statement() -> ast::Stmt;
+    auto print_statement() -> ast::Stmt;
+    auto expr_statement() -> ast::Stmt;
     auto expression() -> ast::Expr;
     auto equality() -> ast::Expr;
     auto comparison() -> ast::Expr;

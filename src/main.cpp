@@ -32,6 +32,7 @@ auto main(int argc, char* argv[]) -> int {
     }
 
     constexpr int kLexicalErrorExit = 65;
+    constexpr int kRuntimeErrorExit = 70;
     const std::string_view command = argv[1];
 
     if (command == "tokenize") {
@@ -58,8 +59,6 @@ auto main(int argc, char* argv[]) -> int {
         }
         std::cout << print_ast(expr) << '\n';
     } else if (command == "evaluate") {
-        constexpr int kRuntimeErrorExit = 70;
-
         std::string file_contents = read_file_contents(argv[2]);
         Scanner scanner(std::move(file_contents));
         auto tokens = scanner.scan_tokens();
@@ -74,6 +73,25 @@ auto main(int argc, char* argv[]) -> int {
         try {
             auto result = evaluate(expr);
             std::cout << format_value(result) << '\n';
+        } catch (const RuntimeError& e) {
+            std::cerr << e.what() << '\n';
+            std::cerr << "[line " << e.token.line << "]\n";
+            return kRuntimeErrorExit;
+        }
+    } else if (command == "run") {
+        std::string file_contents = read_file_contents(argv[2]);
+        Scanner scanner(std::move(file_contents));
+        auto tokens = scanner.scan_tokens();
+        if (scanner.has_errors()) {
+            return kLexicalErrorExit;
+        }
+        Parser parser(std::move(tokens));
+        try {
+            auto statements = parser.parse_statements();
+            if (parser.has_errors()) {
+                return kLexicalErrorExit;
+            }
+            interpret(statements);
         } catch (const RuntimeError& e) {
             std::cerr << e.what() << '\n';
             std::cerr << "[line " << e.token.line << "]\n";

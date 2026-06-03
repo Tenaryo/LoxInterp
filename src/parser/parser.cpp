@@ -16,6 +16,33 @@ auto Parser::parse() -> ast::Expr {
     }
 }
 
+auto Parser::parse_statements() -> std::vector<ast::Stmt> {
+    std::vector<ast::Stmt> statements;
+    while (!is_at_end()) {
+        statements.push_back(statement());
+    }
+    return statements;
+}
+
+auto Parser::statement() -> ast::Stmt {
+    if (match(TokenType::PRINT)) {
+        return print_statement();
+    }
+    return expr_statement();
+}
+
+auto Parser::print_statement() -> ast::Stmt {
+    auto expr = expression();
+    consume(TokenType::SEMICOLON, "Expect ';' after value.");
+    return std::make_unique<ast::PrintStmt>(std::move(expr));
+}
+
+auto Parser::expr_statement() -> ast::Stmt {
+    auto expr = expression();
+    consume(TokenType::SEMICOLON, "Expect ';' after expression.");
+    return std::make_unique<ast::ExprStmt>(std::move(expr));
+}
+
 auto Parser::has_errors() const -> bool {
     return had_error_;
 }

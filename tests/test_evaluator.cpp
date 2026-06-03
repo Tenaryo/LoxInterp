@@ -215,3 +215,36 @@ TEST(EvaluatorTest, ComprehensiveEvalStringConcatEq) {
     auto result = evaluate(parser.parse());
     EXPECT_EQ(format_value(result), "true");
 }
+
+TEST(EvaluatorTest, RunPrintString) {
+    Scanner scanner("print \"Hello, World!\";");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto statements = parser.parse_statements();
+    ASSERT_EQ(statements.size(), 1);
+    testing::internal::CaptureStdout();
+    interpret(statements);
+    EXPECT_EQ(testing::internal::GetCapturedStdout(), "Hello, World!\n");
+}
+
+TEST(EvaluatorTest, RunPrintNumber) {
+    Scanner scanner("print 42;");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto statements = parser.parse_statements();
+    ASSERT_EQ(statements.size(), 1);
+    testing::internal::CaptureStdout();
+    interpret(statements);
+    EXPECT_EQ(testing::internal::GetCapturedStdout(), "42\n");
+}
+
+TEST(EvaluatorTest, RunPrintExpression) {
+    Scanner scanner("print 12 + 24;");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto statements = parser.parse_statements();
+    ASSERT_EQ(statements.size(), 1);
+    testing::internal::CaptureStdout();
+    interpret(statements);
+    EXPECT_EQ(testing::internal::GetCapturedStdout(), "36\n");
+}
