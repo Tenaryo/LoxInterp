@@ -170,3 +170,12 @@ TEST(ParserTest, NoErrorForValidExpr) {
     parser.parse();
     EXPECT_FALSE(parser.has_errors());
 }
+
+TEST(ParserTest, ComprehensiveParser) {
+    Scanner scanner("-3 * (4 + 5) > 2 == true");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto expr = parser.parse();
+    EXPECT_FALSE(parser.has_errors());
+    EXPECT_EQ(print_ast(expr), "(== (> (* (- 3.0) (group (+ 4.0 5.0))) 2.0) true)");
+}
