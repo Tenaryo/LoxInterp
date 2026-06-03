@@ -42,3 +42,19 @@ TEST(ParserTest, ParseDecimal) {
     auto expr = parser.parse();
     EXPECT_EQ(print_ast(expr), "12.34");
 }
+
+TEST(ParserTest, ParseGrouping) {
+    Scanner scanner("(\"foo\")");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto expr = parser.parse();
+    EXPECT_EQ(print_ast(expr), "(group foo)");
+}
+
+TEST(ParserTest, ParseNestedGrouping) {
+    Scanner scanner("((true))");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto expr = parser.parse();
+    EXPECT_EQ(print_ast(expr), "(group (group true))");
+}

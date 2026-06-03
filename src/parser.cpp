@@ -26,6 +26,11 @@ auto Parser::primary() -> ast::Expr {
     if (match(TokenType::NUMBER) || match(TokenType::STRING)) {
         return ast::Literal{previous().literal};
     }
+    if (match(TokenType::LEFT_PAREN)) {
+        auto expr = expression();
+        match(TokenType::RIGHT_PAREN);
+        return std::make_unique<ast::Grouping>(std::move(expr));
+    }
     return ast::Literal{std::monostate{}};
 }
 
@@ -90,6 +95,9 @@ auto print_ast(const ast::Expr& expr) -> std::string {
                     return *str;
                 }
                 return "nil";
+            }
+            if constexpr (std::is_same_v<T, std::unique_ptr<ast::Grouping>>) {
+                return "(group " + print_ast(node->expression) + ")";
             }
             return "";
         },
