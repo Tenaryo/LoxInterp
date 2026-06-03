@@ -8,6 +8,8 @@
 
 namespace ast {
 
+// Expressions
+
 struct Binary;
 struct Grouping;
 struct Unary;
@@ -40,6 +42,17 @@ struct Unary {
     Expr right;
 };
 
+struct Variable {
+    Token name;
+};
+
+struct Assign {
+    Token name;
+    Expr value;
+};
+
+// Statements
+
 struct PrintStmt;
 struct ExprStmt;
 struct VarStmt;
@@ -57,15 +70,6 @@ struct ExprStmt {
 struct VarStmt {
     Token name;
     Expr initializer;
-};
-
-struct Variable {
-    Token name;
-};
-
-struct Assign {
-    Token name;
-    Expr value;
 };
 
 } // namespace ast
