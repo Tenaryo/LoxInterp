@@ -171,3 +171,17 @@ TEST(EvaluatorTest, EvaluateEqualDifferentTypes) {
     auto result = evaluate(parser.parse());
     EXPECT_EQ(format_value(result), "false");
 }
+
+TEST(EvaluatorTest, RuntimeErrorUnaryMinusOnString) {
+    Scanner scanner("-\"foo\"");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    EXPECT_THROW(evaluate(parser.parse()), RuntimeError);
+}
+
+TEST(EvaluatorTest, RuntimeErrorUnaryMinusOnBool) {
+    Scanner scanner("-true");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    EXPECT_THROW(evaluate(parser.parse()), RuntimeError);
+}

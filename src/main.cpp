@@ -58,6 +58,8 @@ auto main(int argc, char* argv[]) -> int {
         }
         std::cout << print_ast(expr) << '\n';
     } else if (command == "evaluate") {
+        constexpr int kRuntimeErrorExit = 70;
+
         std::string file_contents = read_file_contents(argv[2]);
         Scanner scanner(std::move(file_contents));
         auto tokens = scanner.scan_tokens();
@@ -69,8 +71,14 @@ auto main(int argc, char* argv[]) -> int {
         if (parser.has_errors()) {
             return kLexicalErrorExit;
         }
-        auto result = evaluate(expr);
-        std::cout << format_value(result) << '\n';
+        try {
+            auto result = evaluate(expr);
+            std::cout << format_value(result) << '\n';
+        } catch (const RuntimeError& e) {
+            std::cerr << e.what() << '\n';
+            std::cerr << "[line " << e.token.line << "]\n";
+            return kRuntimeErrorExit;
+        }
     } else {
         std::cerr << "Unknown command: " << command << '\n';
         return EXIT_FAILURE;

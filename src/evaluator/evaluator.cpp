@@ -5,6 +5,9 @@
 #include "scanner/scanner.hpp"
 #include "util/overloaded.hpp"
 
+RuntimeError::RuntimeError(const Token& tok, const std::string& msg) : std::runtime_error(msg), token(tok) {
+}
+
 auto evaluate(const ast::Expr& expr) -> LoxLiteral {
     return std::visit(
         overloaded{
@@ -21,7 +24,7 @@ auto evaluate(const ast::Expr& expr) -> LoxLiteral {
                     if (const auto* val = std::get_if<double>(&right)) {
                         return -*val;
                     }
-                    return std::monostate{};
+                    throw RuntimeError(un->op, "Operand must be a number.");
                 }
                 return std::monostate{};
             },
