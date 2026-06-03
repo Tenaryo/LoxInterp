@@ -4,7 +4,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "parser/parser.hpp"
+#include "ast/ast.hpp"
 
 struct RuntimeError : std::runtime_error {
     Token token;
