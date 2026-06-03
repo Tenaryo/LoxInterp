@@ -1,5 +1,7 @@
 #include "parser.hpp"
 
+#include <cmath>
+
 Parser::Parser(std::vector<Token> tokens) : tokens_(std::move(tokens)) {
 }
 
@@ -20,6 +22,9 @@ auto Parser::primary() -> ast::Expr {
     }
     if (match(TokenType::NIL)) {
         return ast::Literal{std::monostate{}};
+    }
+    if (match(TokenType::NUMBER) || match(TokenType::STRING)) {
+        return ast::Literal{previous().literal};
     }
     return ast::Literal{std::monostate{}};
 }
@@ -68,6 +73,21 @@ auto print_ast(const ast::Expr& expr) -> std::string {
                 }
                 if (const auto* b = std::get_if<bool>(&node.value)) {
                     return *b ? "true" : "false";
+                }
+                if (const auto* val = std::get_if<double>(&node.value)) {
+                    double v = *val;
+                    if (v == std::floor(v) && !std::isinf(v)) {
+                        return std::to_string(static_cast<long long>(v)) + ".0";
+                    }
+                    std::string s = std::to_string(v);
+                    s.erase(s.find_last_not_of('0') + 1);
+                    if (s.back() == '.') {
+                        s += '0';
+                    }
+                    return s;
+                }
+                if (const auto* str = std::get_if<std::string>(&node.value)) {
+                    return *str;
                 }
                 return "nil";
             }
