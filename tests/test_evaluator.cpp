@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "evaluator/evaluator.hpp"
+#include "interpreter/interpreter.hpp"
 #include "parser/parser.hpp"
 #include "scanner/scanner.hpp"
 

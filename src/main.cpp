@@ -5,7 +5,7 @@
 #include <string>
 #include <string_view>
 
-#include "evaluator/evaluator.hpp"
+#include "interpreter/interpreter.hpp"
 #include "parser/parser.hpp"
 #include "scanner/scanner.hpp"
 
