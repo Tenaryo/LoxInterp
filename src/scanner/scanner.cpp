@@ -7,7 +7,14 @@
 
 namespace {
 
-const std::unordered_map<std::string, TokenType> kKeywords = {
+struct StringHash {
+    using is_transparent = void;
+    auto operator()(std::string_view sv) const noexcept -> std::size_t {
+        return std::hash<std::string_view>{}(sv);
+    }
+};
+
+const std::unordered_map<std::string, TokenType, StringHash, std::equal_to<>> kKeywords = {
     {"and", TokenType::AND},
     {"class", TokenType::CLASS},
     {"else", TokenType::ELSE},
@@ -181,7 +188,7 @@ auto Scanner::scan_token() -> void {
             while (is_alphanumeric(peek())) {
                 advance();
             }
-            std::string lexeme = source_.substr(start_, current_ - start_);
+            std::string_view lexeme{source_.data() + start_, current_ - start_};
             auto it = kKeywords.find(lexeme);
             add_token((it != kKeywords.end()) ? it->second : TokenType::IDENTIFIER);
         } else {

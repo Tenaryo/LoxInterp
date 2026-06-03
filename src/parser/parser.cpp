@@ -1,8 +1,8 @@
 #include "parser/parser.hpp"
 
-#include <cmath>
 #include <iostream>
 
+#include "util/format.hpp"
 #include "util/overloaded.hpp"
 
 Parser::Parser(std::vector<Token> tokens) : tokens_(std::move(tokens)) {
@@ -352,16 +352,7 @@ auto print_ast(const ast::Expr& expr) -> std::string {
             return *b ? "true" : "false";
         }
         if (const auto* val = std::get_if<double>(&literal)) {
-            double v = *val;
-            if (v == std::floor(v) && !std::isinf(v)) {
-                return std::to_string(static_cast<long long>(v)) + ".0";
-            }
-            std::string s = std::to_string(v);
-            s.erase(s.find_last_not_of('0') + 1);
-            if (s.back() == '.') {
-                s += '0';
-            }
-            return s;
+            return format_double_ast(*val);
         }
         if (const auto* str = std::get_if<std::string>(&literal)) {
             return *str;

@@ -1,9 +1,9 @@
 #include "interpreter/interpreter.hpp"
 
-#include <cmath>
 #include <iostream>
 
 #include "scanner/scanner.hpp"
+#include "util/format.hpp"
 #include "util/overloaded.hpp"
 
 RuntimeError::RuntimeError(const Token& tok, const std::string& msg) : std::runtime_error(msg), token(tok) {
@@ -192,16 +192,7 @@ auto format_value(const LoxLiteral& value) -> std::string {
         return *b ? "true" : "false";
     }
     if (const auto* val = std::get_if<double>(&value)) {
-        double v = *val;
-        if (v == std::floor(v) && !std::isinf(v)) {
-            return std::to_string(static_cast<long long>(v));
-        }
-        std::string s = std::to_string(v);
-        s.erase(s.find_last_not_of('0') + 1);
-        if (s.back() == '.') {
-            s.pop_back();
-        }
-        return s;
+        return format_double_numeric(*val);
     }
     if (const auto* str = std::get_if<std::string>(&value)) {
         return *str;
