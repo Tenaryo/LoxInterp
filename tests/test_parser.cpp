@@ -114,3 +114,19 @@ TEST(ParserTest, ParseAddMultPrecedence) {
     auto expr = parser.parse();
     EXPECT_EQ(print_ast(expr), "(+ 2.0 (* 3.0 4.0))");
 }
+
+TEST(ParserTest, ParseComparison) {
+    Scanner scanner("83 < 99 < 115");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto expr = parser.parse();
+    EXPECT_EQ(print_ast(expr), "(< (< 83.0 99.0) 115.0)");
+}
+
+TEST(ParserTest, ParseMixedComparison) {
+    Scanner scanner("1 <= 2");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto expr = parser.parse();
+    EXPECT_EQ(print_ast(expr), "(<= 1.0 2.0)");
+}
