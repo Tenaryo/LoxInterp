@@ -121,7 +121,13 @@ auto Parser::logic_or() -> ast::Expr {
 }
 
 auto Parser::logic_and() -> ast::Expr {
-    return equality();
+    auto expr = equality();
+    while (match(TokenType::AND)) {
+        Token op = previous();
+        auto right = equality();
+        expr = std::make_unique<ast::Logical>(std::move(expr), op, std::move(right));
+    }
+    return expr;
 }
 
 auto Parser::equality() -> ast::Expr {
