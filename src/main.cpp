@@ -5,6 +5,7 @@
 #include <string>
 #include <string_view>
 
+#include "parser.hpp"
 #include "scanner.hpp"
 
 auto read_file_contents(const std::filesystem::path& path) -> std::string {
@@ -29,10 +30,10 @@ auto main(int argc, char* argv[]) -> int {
         return EXIT_FAILURE;
     }
 
+    constexpr int kLexicalErrorExit = 65;
     const std::string_view command = argv[1];
-    if (command == "tokenize") {
-        constexpr int kLexicalErrorExit = 65;
 
+    if (command == "tokenize") {
         std::string file_contents = read_file_contents(argv[2]);
         Scanner scanner(std::move(file_contents));
         auto tokens = scanner.scan_tokens();
@@ -42,6 +43,16 @@ auto main(int argc, char* argv[]) -> int {
         if (scanner.has_errors()) {
             return kLexicalErrorExit;
         }
+    } else if (command == "parse") {
+        std::string file_contents = read_file_contents(argv[2]);
+        Scanner scanner(std::move(file_contents));
+        auto tokens = scanner.scan_tokens();
+        if (scanner.has_errors()) {
+            return kLexicalErrorExit;
+        }
+        Parser parser(std::move(tokens));
+        auto expr = parser.parse();
+        std::cout << print_ast(expr) << '\n';
     } else {
         std::cerr << "Unknown command: " << command << '\n';
         return EXIT_FAILURE;

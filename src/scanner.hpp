@@ -46,7 +46,7 @@ enum class TokenType {
     EOF_,
 };
 
-using LoxLiteral = std::variant<std::monostate, std::string, double>;
+using LoxLiteral = std::variant<std::monostate, bool, std::string, double>;
 
 struct Token {
     TokenType type;
