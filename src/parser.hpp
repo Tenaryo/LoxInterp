@@ -44,6 +44,7 @@ class Parser {
 
   private:
     auto expression() -> ast::Expr;
+    auto unary() -> ast::Expr;
     auto primary() -> ast::Expr;
     auto match(TokenType type) -> bool;
     auto check(TokenType type) -> bool;

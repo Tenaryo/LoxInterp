@@ -58,3 +58,27 @@ TEST(ParserTest, ParseNestedGrouping) {
     auto expr = parser.parse();
     EXPECT_EQ(print_ast(expr), "(group (group true))");
 }
+
+TEST(ParserTest, ParseUnaryBang) {
+    Scanner scanner("!true");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto expr = parser.parse();
+    EXPECT_EQ(print_ast(expr), "(! true)");
+}
+
+TEST(ParserTest, ParseUnaryMinus) {
+    Scanner scanner("-42");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto expr = parser.parse();
+    EXPECT_EQ(print_ast(expr), "(- 42.0)");
+}
+
+TEST(ParserTest, ParseDoubleUnary) {
+    Scanner scanner("!!false");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto expr = parser.parse();
+    EXPECT_EQ(print_ast(expr), "(! (! false))");
+}

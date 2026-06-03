@@ -10,6 +10,15 @@ auto Parser::parse() -> ast::Expr {
 }
 
 auto Parser::expression() -> ast::Expr {
+    return unary();
+}
+
+auto Parser::unary() -> ast::Expr {
+    if (match(TokenType::BANG) || match(TokenType::MINUS)) {
+        Token op = previous();
+        auto right = unary();
+        return std::make_unique<ast::Unary>(op, std::move(right));
+    }
     return primary();
 }
 
@@ -98,6 +107,9 @@ auto print_ast(const ast::Expr& expr) -> std::string {
             }
             if constexpr (std::is_same_v<T, std::unique_ptr<ast::Grouping>>) {
                 return "(group " + print_ast(node->expression) + ")";
+            }
+            if constexpr (std::is_same_v<T, std::unique_ptr<ast::Unary>>) {
+                return "(" + node->op.lexeme + " " + print_ast(node->right) + ")";
             }
             return "";
         },
