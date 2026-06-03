@@ -35,6 +35,13 @@ auto evaluate(const ast::Expr& expr) -> LoxLiteral {
                         return *lstr + *rstr;
                     }
                 }
+                if (bin->op.type == TokenType::BANG_EQUAL || bin->op.type == TokenType::EQUAL_EQUAL) {
+                    bool is_equal = left == right;
+                    if (bin->op.type == TokenType::BANG_EQUAL) {
+                        return !is_equal;
+                    }
+                    return is_equal;
+                }
                 const auto* lhs = std::get_if<double>(&left);
                 const auto* rhs = std::get_if<double>(&right);
                 if (lhs == nullptr || rhs == nullptr) {

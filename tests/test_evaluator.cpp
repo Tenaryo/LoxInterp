@@ -147,3 +147,27 @@ TEST(EvaluatorTest, EvaluateGreaterEqual) {
     auto result = evaluate(parser.parse());
     EXPECT_EQ(format_value(result), "true");
 }
+
+TEST(EvaluatorTest, EvaluateEqual) {
+    Scanner scanner("\"foo\" == \"foo\"");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto result = evaluate(parser.parse());
+    EXPECT_EQ(format_value(result), "true");
+}
+
+TEST(EvaluatorTest, EvaluateNotEqual) {
+    Scanner scanner("\"foo\" != \"bar\"");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto result = evaluate(parser.parse());
+    EXPECT_EQ(format_value(result), "true");
+}
+
+TEST(EvaluatorTest, EvaluateEqualDifferentTypes) {
+    Scanner scanner("61 == \"61\"");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto result = evaluate(parser.parse());
+    EXPECT_EQ(format_value(result), "false");
+}
