@@ -310,3 +310,36 @@ TEST(ScannerTest, UnterminatedString) {
     ASSERT_EQ(tokens.size(), 1);
     EXPECT_EQ(tokens[0].type, TokenType::EOF_);
 }
+
+TEST(ScannerTest, IntegerLiteral) {
+    Scanner scanner("42");
+    auto tokens = scanner.scan_tokens();
+    ASSERT_EQ(tokens.size(), 2);
+    EXPECT_EQ(tokens[0].type, TokenType::NUMBER);
+    EXPECT_EQ(tokens[0].lexeme, "42");
+    EXPECT_EQ(tokens[1].type, TokenType::EOF_);
+    auto* val = std::get_if<double>(&tokens[0].literal);
+    ASSERT_NE(val, nullptr);
+    EXPECT_DOUBLE_EQ(*val, 42.0);
+}
+
+TEST(ScannerTest, DecimalLiteral) {
+    Scanner scanner("1234.1234");
+    auto tokens = scanner.scan_tokens();
+    ASSERT_EQ(tokens.size(), 2);
+    EXPECT_EQ(tokens[0].type, TokenType::NUMBER);
+    EXPECT_EQ(tokens[0].lexeme, "1234.1234");
+    auto* val = std::get_if<double>(&tokens[0].literal);
+    ASSERT_NE(val, nullptr);
+    EXPECT_DOUBLE_EQ(*val, 1234.1234);
+}
+
+TEST(ScannerTest, NumberTrailingDot) {
+    Scanner scanner("42.");
+    auto tokens = scanner.scan_tokens();
+    ASSERT_EQ(tokens.size(), 3);
+    EXPECT_EQ(tokens[0].type, TokenType::NUMBER);
+    EXPECT_EQ(tokens[0].lexeme, "42");
+    EXPECT_EQ(tokens[1].type, TokenType::DOT);
+    EXPECT_EQ(tokens[2].type, TokenType::EOF_);
+}

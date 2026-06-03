@@ -1,5 +1,7 @@
 #include "scanner.hpp"
 
+#include <charconv>
+#include <cmath>
 #include <iostream>
 
 Scanner::Scanner(std::string source) : source_(std::move(source)) {
@@ -31,6 +33,13 @@ auto Scanner::peek() const -> char {
         return '\0';
     }
     return source_[current_];
+}
+
+auto Scanner::peek_next() const -> char {
+    if (current_ + 1 >= source_.size()) {
+        return '\0';
+    }
+    return source_[current_ + 1];
 }
 
 auto Scanner::add_token(TokenType type) -> void {
@@ -98,6 +107,30 @@ auto Scanner::scan_token() -> void {
     case '*':
         add_token(TokenType::STAR);
         break;
+    case '0':
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9': {
+        while (is_digit(peek())) {
+            advance();
+        }
+        if (peek() == '.' && is_digit(peek_next())) {
+            advance();
+            while (is_digit(peek())) {
+                advance();
+            }
+        }
+        double value = 0.0;
+        std::from_chars(source_.data() + start_, source_.data() + current_, value);
+        add_token(TokenType::NUMBER, value);
+        break;
+    }
     case '!':
         add_token(match('=') ? TokenType::BANG_EQUAL : TokenType::BANG);
         break;
@@ -139,6 +172,10 @@ auto Scanner::match(char expected) -> bool {
     }
     current_++;
     return true;
+}
+
+auto Scanner::is_digit(char ch) const -> bool {
+    return ch >= '0' && ch <= '9';
 }
 
 auto format_token(const Token& token) -> std::string {
@@ -184,6 +221,8 @@ auto format_token(const Token& token) -> std::string {
             return "SLASH";
         case TokenType::STRING:
             return "STRING";
+        case TokenType::NUMBER:
+            return "NUMBER";
         case TokenType::EOF_:
             return "EOF";
         }
@@ -198,7 +237,16 @@ auto format_token(const Token& token) -> std::string {
             return *str;
         }
         if (const auto* val = std::get_if<double>(&lit)) {
-            return std::to_string(*val);
+            double v = *val;
+            if (v == std::floor(v) && !std::isinf(v)) {
+                return std::to_string(static_cast<long long>(v)) + ".0";
+            }
+            std::string s = std::to_string(v);
+            s.erase(s.find_last_not_of('0') + 1);
+            if (s.back() == '.') {
+                s += '0';
+            }
+            return s;
         }
         return "null";
     };
