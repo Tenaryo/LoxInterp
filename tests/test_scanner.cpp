@@ -423,3 +423,68 @@ TEST(ScannerTest, IdNotKeyword) {
     EXPECT_EQ(tokens[0].type, TokenType::IDENTIFIER);
     EXPECT_EQ(tokens[0].lexeme, "andy");
 }
+
+TEST(ScannerTest, ComprehensiveLexer) {
+    Scanner scanner("var x = 42;\nif (x != 3.14) {\n    \"hello\"\n}\n// comment\n@");
+    auto tokens = scanner.scan_tokens();
+
+    EXPECT_TRUE(scanner.has_errors());
+
+    ASSERT_EQ(tokens.size(), 15);
+
+    EXPECT_EQ(tokens[0].type, TokenType::VAR);
+    EXPECT_EQ(tokens[0].lexeme, "var");
+
+    EXPECT_EQ(tokens[1].type, TokenType::IDENTIFIER);
+    EXPECT_EQ(tokens[1].lexeme, "x");
+
+    EXPECT_EQ(tokens[2].type, TokenType::EQUAL);
+    EXPECT_EQ(tokens[2].lexeme, "=");
+
+    EXPECT_EQ(tokens[3].type, TokenType::NUMBER);
+    EXPECT_EQ(tokens[3].lexeme, "42");
+
+    EXPECT_EQ(tokens[4].type, TokenType::SEMICOLON);
+    EXPECT_EQ(tokens[4].lexeme, ";");
+
+    EXPECT_EQ(tokens[5].type, TokenType::IF);
+    EXPECT_EQ(tokens[5].lexeme, "if");
+
+    EXPECT_EQ(tokens[6].type, TokenType::LEFT_PAREN);
+    EXPECT_EQ(tokens[6].lexeme, "(");
+
+    EXPECT_EQ(tokens[7].type, TokenType::IDENTIFIER);
+    EXPECT_EQ(tokens[7].lexeme, "x");
+
+    EXPECT_EQ(tokens[8].type, TokenType::BANG_EQUAL);
+    EXPECT_EQ(tokens[8].lexeme, "!=");
+
+    EXPECT_EQ(tokens[9].type, TokenType::NUMBER);
+    EXPECT_EQ(tokens[9].lexeme, "3.14");
+
+    EXPECT_EQ(tokens[10].type, TokenType::RIGHT_PAREN);
+    EXPECT_EQ(tokens[10].lexeme, ")");
+
+    EXPECT_EQ(tokens[11].type, TokenType::LEFT_BRACE);
+    EXPECT_EQ(tokens[11].lexeme, "{");
+
+    EXPECT_EQ(tokens[12].type, TokenType::STRING);
+    EXPECT_EQ(tokens[12].lexeme, "\"hello\"");
+
+    EXPECT_EQ(tokens[13].type, TokenType::RIGHT_BRACE);
+    EXPECT_EQ(tokens[13].lexeme, "}");
+
+    EXPECT_EQ(tokens[14].type, TokenType::EOF_);
+
+    auto* num1 = std::get_if<double>(&tokens[3].literal);
+    ASSERT_NE(num1, nullptr);
+    EXPECT_DOUBLE_EQ(*num1, 42.0);
+
+    auto* num2 = std::get_if<double>(&tokens[9].literal);
+    ASSERT_NE(num2, nullptr);
+    EXPECT_DOUBLE_EQ(*num2, 3.14);
+
+    auto* str = std::get_if<std::string>(&tokens[12].literal);
+    ASSERT_NE(str, nullptr);
+    EXPECT_EQ(*str, "hello");
+}
