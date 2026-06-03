@@ -199,3 +199,19 @@ TEST(EvaluatorTest, RuntimeErrorBinaryDivideOnBool) {
     Parser parser(std::move(tokens));
     EXPECT_THROW(evaluate(parser.parse()), RuntimeError);
 }
+
+TEST(EvaluatorTest, ComprehensiveEvalArith) {
+    Scanner scanner("-(3 * 4) > 2 == true");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto result = evaluate(parser.parse());
+    EXPECT_EQ(format_value(result), "false");
+}
+
+TEST(EvaluatorTest, ComprehensiveEvalStringConcatEq) {
+    Scanner scanner("(\"foo\" + \"bar\") == \"foobar\"");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto result = evaluate(parser.parse());
+    EXPECT_EQ(format_value(result), "true");
+}
