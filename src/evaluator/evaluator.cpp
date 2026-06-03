@@ -2,6 +2,7 @@
 
 #include <cmath>
 
+#include "scanner/scanner.hpp"
 #include "util/overloaded.hpp"
 
 auto evaluate(const ast::Expr& expr) -> LoxLiteral {
@@ -9,6 +10,21 @@ auto evaluate(const ast::Expr& expr) -> LoxLiteral {
         overloaded{
             [](const ast::Literal& lit) -> LoxLiteral { return lit.value; },
             [](const std::unique_ptr<ast::Grouping>& grp) -> LoxLiteral { return evaluate(grp->expression); },
+            [](const std::unique_ptr<ast::Unary>& un) -> LoxLiteral {
+                auto right = evaluate(un->right);
+                if (un->op.type == TokenType::BANG) {
+                    bool is_falsy = std::holds_alternative<std::monostate>(right)
+                                    || (std::holds_alternative<bool>(right) && !std::get<bool>(right));
+                    return is_falsy;
+                }
+                if (un->op.type == TokenType::MINUS) {
+                    if (const auto* val = std::get_if<double>(&right)) {
+                        return -*val;
+                    }
+                    return std::monostate{};
+                }
+                return std::monostate{};
+            },
             [](const auto&) -> LoxLiteral { return std::monostate{}; },
         },
         expr);

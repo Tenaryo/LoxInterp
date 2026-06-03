@@ -67,3 +67,35 @@ TEST(EvaluatorTest, EvaluateNestedGrouping) {
     auto result = evaluate(parser.parse());
     EXPECT_EQ(format_value(result), "false");
 }
+
+TEST(EvaluatorTest, EvaluateUnaryNegation) {
+    Scanner scanner("-73");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto result = evaluate(parser.parse());
+    EXPECT_EQ(format_value(result), "-73");
+}
+
+TEST(EvaluatorTest, EvaluateUnaryBangTrue) {
+    Scanner scanner("!true");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto result = evaluate(parser.parse());
+    EXPECT_EQ(format_value(result), "false");
+}
+
+TEST(EvaluatorTest, EvaluateUnaryBangNumber) {
+    Scanner scanner("!10.40");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto result = evaluate(parser.parse());
+    EXPECT_EQ(format_value(result), "false");
+}
+
+TEST(EvaluatorTest, EvaluateUnaryBangNestedFalse) {
+    Scanner scanner("!((false))");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto result = evaluate(parser.parse());
+    EXPECT_EQ(format_value(result), "true");
+}
