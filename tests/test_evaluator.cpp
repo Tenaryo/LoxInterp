@@ -115,3 +115,11 @@ TEST(EvaluatorTest, EvaluateDivide) {
     auto result = evaluate(parser.parse());
     EXPECT_EQ(format_value(result), "8.4");
 }
+
+TEST(EvaluatorTest, EvaluateAddSubtract) {
+    Scanner scanner("20 + 74 - (-(14 - 33))");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto result = evaluate(parser.parse());
+    EXPECT_EQ(format_value(result), "75");
+}

@@ -39,6 +39,12 @@ auto evaluate(const ast::Expr& expr) -> LoxLiteral {
                 if (bin->op.type == TokenType::SLASH) {
                     return *lhs / *rhs;
                 }
+                if (bin->op.type == TokenType::PLUS) {
+                    return *lhs + *rhs;
+                }
+                if (bin->op.type == TokenType::MINUS) {
+                    return *lhs - *rhs;
+                }
                 return std::monostate{};
             },
             [](const auto&) -> LoxLiteral { return std::monostate{}; },
