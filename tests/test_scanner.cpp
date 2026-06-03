@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "scanner.hpp"
+#include "scanner/scanner.hpp"
 
 TEST(ScannerTest, EmptyInput) {
     Scanner scanner("");

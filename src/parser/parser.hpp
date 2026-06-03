@@ -6,7 +6,7 @@
 #include <variant>
 #include <vector>
 
-#include "scanner.hpp"
+#include "scanner/scanner.hpp"
 
 namespace ast {
 

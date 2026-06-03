@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
-#include "parser.hpp"
-#include "scanner.hpp"
+#include "parser/parser.hpp"
+#include "scanner/scanner.hpp"
 
 TEST(ParserTest, ParseTrue) {
     Scanner scanner("true");

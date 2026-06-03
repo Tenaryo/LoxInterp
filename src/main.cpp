@@ -5,8 +5,9 @@
 #include <string>
 #include <string_view>
 
-#include "parser.hpp"
-#include "scanner.hpp"
+#include "evaluator/evaluator.hpp"
+#include "parser/parser.hpp"
+#include "scanner/scanner.hpp"
 
 auto read_file_contents(const std::filesystem::path& path) -> std::string {
     std::ifstream file(path);
@@ -56,6 +57,20 @@ auto main(int argc, char* argv[]) -> int {
             return kLexicalErrorExit;
         }
         std::cout << print_ast(expr) << '\n';
+    } else if (command == "evaluate") {
+        std::string file_contents = read_file_contents(argv[2]);
+        Scanner scanner(std::move(file_contents));
+        auto tokens = scanner.scan_tokens();
+        if (scanner.has_errors()) {
+            return kLexicalErrorExit;
+        }
+        Parser parser(std::move(tokens));
+        auto expr = parser.parse();
+        if (parser.has_errors()) {
+            return kLexicalErrorExit;
+        }
+        auto result = evaluate(expr);
+        std::cout << format_value(result) << '\n';
     } else {
         std::cerr << "Unknown command: " << command << '\n';
         return EXIT_FAILURE;

@@ -1,7 +1,9 @@
-#include "parser.hpp"
+#include "parser/parser.hpp"
 
 #include <cmath>
 #include <iostream>
+
+#include "util/overloaded.hpp"
 
 Parser::Parser(std::vector<Token> tokens) : tokens_(std::move(tokens)) {
 }
@@ -145,43 +147,43 @@ auto Parser::consume(TokenType type, std::string_view message) -> Token {
 }
 
 auto print_ast(const ast::Expr& expr) -> std::string {
-    return std::visit(
-        [](const auto& node) -> std::string {
-            using T = std::decay_t<decltype(node)>;
-            if constexpr (std::is_same_v<T, ast::Literal>) {
-                if (std::holds_alternative<std::monostate>(node.value)) {
-                    return "nil";
-                }
-                if (const auto* b = std::get_if<bool>(&node.value)) {
-                    return *b ? "true" : "false";
-                }
-                if (const auto* val = std::get_if<double>(&node.value)) {
-                    double v = *val;
-                    if (v == std::floor(v) && !std::isinf(v)) {
-                        return std::to_string(static_cast<long long>(v)) + ".0";
-                    }
-                    std::string s = std::to_string(v);
-                    s.erase(s.find_last_not_of('0') + 1);
-                    if (s.back() == '.') {
-                        s += '0';
-                    }
-                    return s;
-                }
-                if (const auto* str = std::get_if<std::string>(&node.value)) {
-                    return *str;
-                }
-                return "nil";
+    auto format_literal = [](const LoxLiteral& literal) -> std::string {
+        if (std::holds_alternative<std::monostate>(literal)) {
+            return "nil";
+        }
+        if (const auto* b = std::get_if<bool>(&literal)) {
+            return *b ? "true" : "false";
+        }
+        if (const auto* val = std::get_if<double>(&literal)) {
+            double v = *val;
+            if (v == std::floor(v) && !std::isinf(v)) {
+                return std::to_string(static_cast<long long>(v)) + ".0";
             }
-            if constexpr (std::is_same_v<T, std::unique_ptr<ast::Grouping>>) {
-                return "(group " + print_ast(node->expression) + ")";
+            std::string s = std::to_string(v);
+            s.erase(s.find_last_not_of('0') + 1);
+            if (s.back() == '.') {
+                s += '0';
             }
-            if constexpr (std::is_same_v<T, std::unique_ptr<ast::Unary>>) {
-                return "(" + node->op.lexeme + " " + print_ast(node->right) + ")";
-            }
-            if constexpr (std::is_same_v<T, std::unique_ptr<ast::Binary>>) {
-                return "(" + node->op.lexeme + " " + print_ast(node->left) + " " + print_ast(node->right) + ")";
-            }
-            return "";
-        },
-        expr);
+            return s;
+        }
+        if (const auto* str = std::get_if<std::string>(&literal)) {
+            return *str;
+        }
+        return "nil";
+    };
+
+    return std::visit(overloaded{
+                          [&](const ast::Literal& lit) -> std::string { return format_literal(lit.value); },
+                          [&](const std::unique_ptr<ast::Grouping>& grp) -> std::string {
+                              return "(group " + print_ast(grp->expression) + ")";
+                          },
+                          [&](const std::unique_ptr<ast::Unary>& un) -> std::string {
+                              return "(" + un->op.lexeme + " " + print_ast(un->right) + ")";
+                          },
+                          [&](const std::unique_ptr<ast::Binary>& bin) -> std::string {
+                              return "(" + bin->op.lexeme + " " + print_ast(bin->left) + " " + print_ast(bin->right)
+                                     + ")";
+                          },
+                      },
+                      expr);
 }
