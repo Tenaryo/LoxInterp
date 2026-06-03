@@ -52,6 +52,9 @@ auto main(int argc, char* argv[]) -> int {
         }
         Parser parser(std::move(tokens));
         auto expr = parser.parse();
+        if (parser.has_errors()) {
+            return kLexicalErrorExit;
+        }
         std::cout << print_ast(expr) << '\n';
     } else {
         std::cerr << "Unknown command: " << command << '\n';

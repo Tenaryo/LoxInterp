@@ -1,12 +1,21 @@
 #include "parser.hpp"
 
 #include <cmath>
+#include <iostream>
 
 Parser::Parser(std::vector<Token> tokens) : tokens_(std::move(tokens)) {
 }
 
 auto Parser::parse() -> ast::Expr {
-    return expression();
+    try {
+        return expression();
+    } catch (const ParseError&) {
+        return ast::Literal{std::monostate{}};
+    }
+}
+
+auto Parser::has_errors() const -> bool {
+    return had_error_;
 }
 
 auto Parser::expression() -> ast::Expr {
@@ -81,7 +90,7 @@ auto Parser::primary() -> ast::Expr {
         match(TokenType::RIGHT_PAREN);
         return std::make_unique<ast::Grouping>(std::move(expr));
     }
-    return ast::Literal{std::monostate{}};
+    throw error(peek(), "Expect expression.");
 }
 
 auto Parser::match(TokenType type) -> bool {
@@ -116,6 +125,23 @@ auto Parser::peek() const -> Token {
 
 auto Parser::previous() -> Token {
     return tokens_[current_ - 1];
+}
+
+auto Parser::error(const Token& token, std::string_view message) -> ParseError {
+    had_error_ = true;
+    if (token.type == TokenType::EOF_) {
+        std::cerr << "[line " << token.line << "] Error at end: " << message << '\n';
+    } else {
+        std::cerr << "[line " << token.line << "] Error at '" << token.lexeme << "': " << message << '\n';
+    }
+    return ParseError{};
+}
+
+auto Parser::consume(TokenType type, std::string_view message) -> Token {
+    if (check(type)) {
+        return advance();
+    }
+    throw error(peek(), message);
 }
 
 auto print_ast(const ast::Expr& expr) -> std::string {

@@ -154,3 +154,19 @@ TEST(ParserTest, ParseFullPrecedence) {
     auto expr = parser.parse();
     EXPECT_EQ(print_ast(expr), "(== (+ 1.0 (* 2.0 3.0)) 4.0)");
 }
+
+TEST(ParserTest, SyntaxErrorIncompleteBinary) {
+    Scanner scanner("(72 +)");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    parser.parse();
+    EXPECT_TRUE(parser.has_errors());
+}
+
+TEST(ParserTest, NoErrorForValidExpr) {
+    Scanner scanner("1 + 2");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    parser.parse();
+    EXPECT_FALSE(parser.has_errors());
+}
