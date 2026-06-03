@@ -19,7 +19,11 @@ auto Parser::parse() -> ast::Expr {
 auto Parser::parse_statements() -> std::vector<ast::Stmt> {
     std::vector<ast::Stmt> statements;
     while (!is_at_end()) {
-        statements.push_back(statement());
+        try {
+            statements.push_back(statement());
+        } catch (const ParseError&) {
+            synchronize();
+        }
     }
     return statements;
 }
@@ -171,6 +175,32 @@ auto Parser::consume(TokenType type, std::string_view message) -> Token {
         return advance();
     }
     throw error(peek(), message);
+}
+
+auto Parser::synchronize() -> void {
+    if (!is_at_end()) {
+        current_++;
+    }
+
+    while (!is_at_end()) {
+        if (previous().type == TokenType::SEMICOLON) {
+            return;
+        }
+        switch (peek().type) {
+        case TokenType::CLASS:
+        case TokenType::FUN:
+        case TokenType::VAR:
+        case TokenType::FOR:
+        case TokenType::IF:
+        case TokenType::WHILE:
+        case TokenType::PRINT:
+        case TokenType::RETURN:
+            return;
+        default:
+            break;
+        }
+        current_++;
+    }
 }
 
 auto print_ast(const ast::Expr& expr) -> std::string {

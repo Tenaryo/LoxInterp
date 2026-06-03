@@ -85,6 +85,7 @@ class Parser {
     auto previous() -> Token;
     auto error(const Token& token, std::string_view message) -> ParseError;
     auto consume(TokenType type, std::string_view message) -> Token;
+    auto synchronize() -> void;
 
     std::vector<Token> tokens_;
     std::size_t current_{0};
