@@ -364,7 +364,11 @@ auto execute(const ast::Stmt& stmt, std::shared_ptr<Environment> env) -> void {
                            if (super_cls == nullptr || *super_cls == nullptr) {
                                throw RuntimeError(cls->name, "Superclass must be a class.");
                            }
-                           klass->superclass_ = std::dynamic_pointer_cast<LoxClass>(*super_cls);
+                           auto super_lox_class = std::dynamic_pointer_cast<LoxClass>(*super_cls);
+                           if (super_lox_class == nullptr) {
+                               throw RuntimeError(cls->name, "Superclass must be a class.");
+                           }
+                           klass->superclass_ = super_lox_class;
                        }
 
                        for (auto& method : cls->methods) {

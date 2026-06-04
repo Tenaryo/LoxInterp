@@ -74,6 +74,11 @@ auto Resolver::resolve(const ast::Stmt& stmt) -> void {
                 class_depth_++;
                 if (cls->superclass.has_value()) {
                     resolve(const_cast<ast::Expr&>(*cls->superclass));
+                    if (auto* var = std::get_if<std::unique_ptr<ast::Variable>>(&*cls->superclass)) {
+                        if ((*var)->name.lexeme == cls->name.lexeme) {
+                            error((*var)->name, "A class can't inherit from itself.");
+                        }
+                    }
                 }
                 for (auto& method : cls->methods) {
                     auto& m = const_cast<ast::FunctionStmt&>(*method);
