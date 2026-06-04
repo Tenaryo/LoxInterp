@@ -63,6 +63,8 @@ auto Resolver::resolve(const ast::Stmt& stmt) -> void {
             [&](const std::unique_ptr<ast::ReturnStmt>& ret) {
                 if (function_depth_ == 0) {
                     error(ret->keyword, "Can't return from top-level code.");
+                } else if (is_init_ && ret->value.has_value()) {
+                    error(ret->keyword, "Can't return a value from an initializer.");
                 }
                 if (ret->value.has_value()) {
                     resolve(const_cast<ast::Expr&>(*ret->value));
@@ -73,6 +75,7 @@ auto Resolver::resolve(const ast::Stmt& stmt) -> void {
                 for (auto& method : cls->methods) {
                     auto& m = const_cast<ast::FunctionStmt&>(*method);
                     function_depth_++;
+                    is_init_ = (m.name.lexeme == "init");
                     begin_scope();
                     Token this_token{TokenType::THIS, "this", std::monostate{}, cls->name.line};
                     declare(this_token);
