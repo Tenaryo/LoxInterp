@@ -8,7 +8,8 @@
 
 struct RuntimeError : std::runtime_error {
     Token token;
-    RuntimeError(const Token& tok, const std::string& msg);
+    RuntimeError(const Token& tok, const std::string& msg) : std::runtime_error(msg), token(tok) {
+    }
 };
 
 class Environment {

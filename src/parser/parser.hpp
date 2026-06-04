@@ -39,6 +39,8 @@ class Parser {
     auto term() -> ast::Expr;
     auto factor() -> ast::Expr;
     auto unary() -> ast::Expr;
+    auto call() -> ast::Expr;
+    auto finish_call(ast::Expr callee) -> ast::Expr;
     auto primary() -> ast::Expr;
     auto match(TokenType type) -> bool;
     auto check(TokenType type) -> bool;

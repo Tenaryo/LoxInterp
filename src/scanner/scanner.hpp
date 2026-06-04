@@ -1,5 +1,7 @@
 #pragma once
 
+#include <functional>
+#include <memory>
 #include <string>
 #include <variant>
 #include <vector>
@@ -46,7 +48,13 @@ enum class TokenType {
     EOF_,
 };
 
-using LoxLiteral = std::variant<std::monostate, bool, std::string, double>;
+struct Callable;
+using LoxLiteral = std::variant<std::monostate, bool, std::string, double, std::shared_ptr<Callable>>;
+
+struct Callable {
+    using Fn = std::function<LoxLiteral(const std::vector<LoxLiteral>&)>;
+    Fn function;
+};
 
 struct Token {
     TokenType type;

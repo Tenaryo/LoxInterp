@@ -1,13 +1,11 @@
 #include "interpreter/interpreter.hpp"
 
+#include <ctime>
 #include <iostream>
 
 #include "scanner/scanner.hpp"
 #include "util/format.hpp"
 #include "util/overloaded.hpp"
-
-RuntimeError::RuntimeError(const Token& tok, const std::string& msg) : std::runtime_error(msg), token(tok) {
-}
 
 Environment::Environment(Environment* enclosing) : enclosing_(enclosing) {
 }
@@ -131,14 +129,30 @@ auto evaluate(const ast::Expr& expr, Environment& env) -> LoxLiteral {
                 }
                 return evaluate(logical->right, env);
             },
+            [&](const std::unique_ptr<ast::Call>& call) -> LoxLiteral {
+                auto callee = evaluate(call->callee, env);
+                std::vector<LoxLiteral> args;
+                args.reserve(call->arguments.size());
+                for (auto& arg : call->arguments) {
+                    args.push_back(evaluate(arg, env));
+                }
+                auto* callable = std::get_if<std::shared_ptr<Callable>>(&callee);
+                if (callable == nullptr) {
+                    throw RuntimeError(call->paren, "Can only call functions and classes.");
+                }
+                return (*callable)->function(args);
+            },
         },
         expr);
 }
 
 auto interpret(const std::vector<ast::Stmt>& statements) -> void {
-    Environment env;
+    Environment global;
+    auto clock_fn = std::make_shared<Callable>(
+        Callable{[](const std::vector<LoxLiteral>&) -> LoxLiteral { return static_cast<double>(std::time(nullptr)); }});
+    global.define("clock", std::move(clock_fn));
     for (const auto& stmt : statements) {
-        execute(stmt, env);
+        execute(stmt, global);
     }
 }
 
@@ -196,6 +210,9 @@ auto format_value(const LoxLiteral& value) -> std::string {
     }
     if (const auto* str = std::get_if<std::string>(&value)) {
         return *str;
+    }
+    if (std::get_if<std::shared_ptr<Callable>>(&value) != nullptr) {
+        return "<native fn>";
     }
     return "nil";
 }

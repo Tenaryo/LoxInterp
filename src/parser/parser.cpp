@@ -239,7 +239,30 @@ auto Parser::unary() -> ast::Expr {
         auto right = unary();
         return std::make_unique<ast::Unary>(op, std::move(right));
     }
-    return primary();
+    return call();
+}
+
+auto Parser::call() -> ast::Expr {
+    auto expr = primary();
+    while (true) {
+        if (match(TokenType::LEFT_PAREN)) {
+            expr = finish_call(std::move(expr));
+        } else {
+            break;
+        }
+    }
+    return expr;
+}
+
+auto Parser::finish_call(ast::Expr callee) -> ast::Expr {
+    std::vector<ast::Expr> arguments;
+    if (!check(TokenType::RIGHT_PAREN)) {
+        do {
+            arguments.push_back(expression());
+        } while (match(TokenType::COMMA));
+    }
+    Token paren = consume(TokenType::RIGHT_PAREN, "Expect ')' after arguments.");
+    return std::make_unique<ast::Call>(std::move(callee), paren, std::move(arguments));
 }
 
 auto Parser::primary() -> ast::Expr {
@@ -379,6 +402,16 @@ auto print_ast(const ast::Expr& expr) -> std::string {
                           [&](const std::unique_ptr<ast::Logical>& logical) -> std::string {
                               return "(" + print_ast(logical->left) + " " + logical->op.lexeme + " "
                                      + print_ast(logical->right) + ")";
+                          },
+                          [&](const std::unique_ptr<ast::Call>& call) -> std::string {
+                              std::string result = print_ast(call->callee) + "(";
+                              for (std::size_t i = 0; i < call->arguments.size(); ++i) {
+                                  if (i > 0) {
+                                      result += ", ";
+                                  }
+                                  result += print_ast(call->arguments[i]);
+                              }
+                              return result + ")";
                           },
                       },
                       expr);
