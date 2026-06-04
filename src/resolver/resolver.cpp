@@ -69,6 +69,7 @@ auto Resolver::resolve(const ast::Stmt& stmt) -> void {
                 }
             },
             [&](const std::unique_ptr<ast::ClassStmt>& cls) {
+                class_depth_++;
                 for (auto& method : cls->methods) {
                     auto& m = const_cast<ast::FunctionStmt&>(*method);
                     function_depth_++;
@@ -86,6 +87,7 @@ auto Resolver::resolve(const ast::Stmt& stmt) -> void {
                     end_scope();
                     function_depth_--;
                 }
+                class_depth_--;
             },
         },
         stmt);
@@ -129,7 +131,13 @@ auto Resolver::resolve(ast::Expr& expr) -> void {
                        resolve(const_cast<ast::Expr&>(set->value));
                        resolve(const_cast<ast::Expr&>(set->object));
                    },
-                   [&](const std::unique_ptr<ast::ThisExpr>& this_expr) { resolve_local(expr, this_expr->keyword); },
+                   [&](const std::unique_ptr<ast::ThisExpr>& this_expr) {
+                       if (class_depth_ == 0) {
+                           error(this_expr->keyword, "Can't use 'this' outside of a class.");
+                           return;
+                       }
+                       resolve_local(expr, this_expr->keyword);
+                   },
                },
                expr);
 }

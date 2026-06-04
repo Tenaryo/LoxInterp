@@ -25,5 +25,6 @@ class Resolver {
 
     std::vector<std::unordered_map<std::string, bool>> scopes_;
     int function_depth_{0};
+    int class_depth_{0};
     bool had_error_{false};
 };
