@@ -62,6 +62,9 @@ auto LoxClass::call(std::shared_ptr<Environment> /*env*/, const std::vector<LoxL
         auto bound = std::make_shared<Function>(*init);
         bound->closure = std::make_shared<Environment>(init->closure);
         bound->closure->define("this", instance);
+        if (superclass_ != nullptr) {
+            bound->closure->define("super", superclass_);
+        }
         bound->call(bound->closure, args, Token{});
     }
     return instance;
@@ -82,6 +85,11 @@ auto LoxInstance::get(const Token& name) -> LoxLiteral {
         bound->closure = std::make_shared<Environment>(method->closure);
         bound->closure->define("this", shared_from_this());
         bound->is_init_ = (name.lexeme == "init");
+        if (auto dc = method->declaring_class_.lock()) {
+            if (dc->superclass_ != nullptr) {
+                bound->closure->define("super", dc->superclass_);
+            }
+        }
         return bound;
     }
     throw RuntimeError(name, "Undefined property '" + name.lexeme + "'.");
@@ -290,17 +298,19 @@ auto evaluate(const ast::Expr& expr, std::shared_ptr<Environment> env) -> LoxLit
             },
             [&](const std::unique_ptr<ast::ThisExpr>& this_expr) -> LoxLiteral { return env->get(this_expr->keyword); },
             [&](const std::unique_ptr<ast::SuperExpr>& super_expr) -> LoxLiteral {
-                Token this_token{TokenType::THIS, "this", std::monostate{}, super_expr->keyword.line};
-                auto this_val = env->get(this_token);
-                auto* instance = std::get_if<std::shared_ptr<LoxInstance>>(&this_val);
-                auto superclass = (*instance)->klass->superclass_;
-                if (superclass == nullptr) {
+                auto super_val = env->get(super_expr->keyword);
+                auto* super_callable = std::get_if<std::shared_ptr<Callable>>(&super_val);
+                if (super_callable == nullptr || *super_callable == nullptr) {
                     throw RuntimeError(super_expr->keyword, "Superclass not found.");
                 }
+                auto superclass = std::dynamic_pointer_cast<LoxClass>(*super_callable);
                 auto method = superclass->find_method(super_expr->method.lexeme);
                 if (method == nullptr) {
                     throw RuntimeError(super_expr->method, "Undefined property '" + super_expr->method.lexeme + "'.");
                 }
+                Token this_token{TokenType::THIS, "this", std::monostate{}, super_expr->keyword.line};
+                auto this_val = env->get(this_token);
+                auto* instance = std::get_if<std::shared_ptr<LoxInstance>>(&this_val);
                 auto bound = std::make_shared<Function>(*method);
                 bound->closure = std::make_shared<Environment>(method->closure);
                 bound->closure->define("this", *instance);
@@ -395,6 +405,7 @@ auto execute(const ast::Stmt& stmt, std::shared_ptr<Environment> env) -> void {
                            fn->params = std::move(f.params);
                            fn->body = &f.body;
                            fn->closure = env;
+                           fn->declaring_class_ = klass;
                            klass->methods_[fn->name.lexeme] = fn;
                        }
 

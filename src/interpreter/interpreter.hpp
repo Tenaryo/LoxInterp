@@ -19,11 +19,14 @@ struct Return : std::runtime_error {
     }
 };
 
+struct LoxClass;
+
 struct Function : Callable {
     Token name;
     std::vector<Token> params;
     const std::vector<ast::Stmt>* body;
     std::shared_ptr<Environment> closure;
+    std::weak_ptr<LoxClass> declaring_class_;
     bool is_init_{false};
 
     auto call(std::shared_ptr<Environment> env, const std::vector<LoxLiteral>& args, const Token& paren)
