@@ -129,7 +129,14 @@ auto Resolver::declare(const Token& name) -> void {
     if (scopes_.empty()) {
         return;
     }
-    scopes_.back()[name.lexeme] = false;
+    auto& scope = scopes_.back();
+    if (scope.count(name.lexeme) != 0) {
+        if (scopes_.size() > 1) {
+            error(name, "Already a variable with this name in this scope.");
+        }
+        return;
+    }
+    scope[name.lexeme] = false;
 }
 
 auto Resolver::define(const Token& name) -> void {

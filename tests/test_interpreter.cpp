@@ -448,3 +448,26 @@ TEST(EvaluatorTest, RunLocalSelfInitError) {
     resolver.resolve(statements);
     EXPECT_TRUE(resolver.has_errors());
 }
+
+TEST(EvaluatorTest, RunGlobalRedeclaration) {
+    Scanner scanner("var a = \"1\";\nvar a = \"2\";\nprint a;");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto statements = parser.parse_statements();
+    Resolver resolver;
+    resolver.resolve(statements);
+    EXPECT_FALSE(resolver.has_errors());
+    testing::internal::CaptureStdout();
+    interpret(statements);
+    EXPECT_EQ(testing::internal::GetCapturedStdout(), "2\n");
+}
+
+TEST(EvaluatorTest, RunLocalRedeclarationError) {
+    Scanner scanner("{\n  var a = \"1\";\n  var a = \"2\";\n}");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto statements = parser.parse_statements();
+    Resolver resolver;
+    resolver.resolve(statements);
+    EXPECT_TRUE(resolver.has_errors());
+}
