@@ -495,3 +495,15 @@ TEST(EvaluatorTest, RunInstanceProperty) {
     interpret(statements);
     EXPECT_EQ(testing::internal::GetCapturedStdout(), "Falcon\n");
 }
+
+TEST(EvaluatorTest, RunInstanceMethod) {
+    Scanner scanner("class Robot {\n  beep() {\n    print \"Beep!\";\n  }\n}\nRobot().beep();");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto statements = parser.parse_statements();
+    Resolver resolver;
+    resolver.resolve(statements);
+    testing::internal::CaptureStdout();
+    interpret(statements);
+    EXPECT_EQ(testing::internal::GetCapturedStdout(), "Beep!\n");
+}

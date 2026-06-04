@@ -32,10 +32,12 @@ struct Function : Callable {
 
 struct LoxClass : Callable, std::enable_shared_from_this<LoxClass> {
     std::string name;
+    std::unordered_map<std::string, std::shared_ptr<Function>> methods_;
 
     auto call(std::shared_ptr<Environment> env, const std::vector<LoxLiteral>& args, const Token& paren)
         -> LoxLiteral override;
     auto to_string() const -> std::string override;
+    auto find_method(const std::string& name) -> std::shared_ptr<Function>;
 };
 
 struct LoxInstance : std::enable_shared_from_this<LoxInstance> {

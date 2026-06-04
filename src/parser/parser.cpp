@@ -109,8 +109,18 @@ auto Parser::function_declaration() -> ast::Stmt {
 auto Parser::class_declaration() -> ast::Stmt {
     Token name = consume(TokenType::IDENTIFIER, "Expect class name.");
     consume(TokenType::LEFT_BRACE, "Expect '{' before class body.");
+
+    std::vector<std::unique_ptr<ast::FunctionStmt>> methods;
+    while (!check(TokenType::RIGHT_BRACE) && !is_at_end()) {
+        match(TokenType::FUN);
+        auto func = function_declaration();
+        auto* func_ptr = std::get_if<std::unique_ptr<ast::FunctionStmt>>(&func);
+        methods.push_back(std::move(*func_ptr));
+    }
+
     consume(TokenType::RIGHT_BRACE, "Expect '}' after class body.");
-    return std::make_unique<ast::ClassStmt>(name);
+    auto cls = std::make_unique<ast::ClassStmt>(name, std::move(methods));
+    return cls;
 }
 
 auto Parser::block() -> ast::Stmt {

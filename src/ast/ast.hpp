@@ -148,6 +148,7 @@ struct ReturnStmt {
 
 struct ClassStmt {
     Token name;
+    std::vector<std::unique_ptr<FunctionStmt>> methods;
 };
 
 } // namespace ast

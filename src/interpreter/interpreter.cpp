@@ -64,6 +64,13 @@ auto LoxInstance::get(const Token& name) -> LoxLiteral {
     if (it != fields_.end()) {
         return it->second;
     }
+    auto method = klass->find_method(name.lexeme);
+    if (method != nullptr) {
+        auto bound = std::make_shared<Function>(*method);
+        bound->closure = std::make_shared<Environment>(method->closure);
+        bound->closure->define("this", shared_from_this());
+        return bound;
+    }
     throw RuntimeError(name, "Undefined property '" + name.lexeme + "'.");
 }
 
@@ -73,6 +80,14 @@ auto LoxInstance::set(const Token& name, LoxLiteral value) -> void {
 
 auto LoxClass::to_string() const -> std::string {
     return name;
+}
+
+auto LoxClass::find_method(const std::string& method_name) -> std::shared_ptr<Function> {
+    auto it = methods_.find(method_name);
+    if (it != methods_.end()) {
+        return it->second;
+    }
+    return nullptr;
 }
 
 Environment::Environment(std::shared_ptr<Environment> enclosing) : enclosing_(std::move(enclosing)) {
@@ -325,6 +340,17 @@ auto execute(const ast::Stmt& stmt, std::shared_ptr<Environment> env) -> void {
                    [&](const std::unique_ptr<ast::ClassStmt>& cls) {
                        auto klass = std::make_shared<LoxClass>();
                        klass->name = cls->name.lexeme;
+
+                       for (auto& method : cls->methods) {
+                           auto& f = const_cast<ast::FunctionStmt&>(*method);
+                           auto fn = std::make_shared<Function>();
+                           fn->name = f.name;
+                           fn->params = std::move(f.params);
+                           fn->body = &f.body;
+                           fn->closure = env;
+                           klass->methods_[fn->name.lexeme] = fn;
+                       }
+
                        env->define(cls->name.lexeme, klass);
                    },
                },
