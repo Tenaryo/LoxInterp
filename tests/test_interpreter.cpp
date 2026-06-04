@@ -2,6 +2,7 @@
 
 #include "interpreter/interpreter.hpp"
 #include "parser/parser.hpp"
+#include "resolver/resolver.hpp"
 #include "scanner/scanner.hpp"
 
 TEST(EvaluatorTest, EvaluateTrue) {
@@ -411,4 +412,39 @@ TEST(EvaluatorTest, RunCallNonFunction) {
     Parser parser(std::move(tokens));
     auto statements = parser.parse_statements();
     EXPECT_THROW(interpret(statements), RuntimeError);
+}
+
+TEST(EvaluatorTest, RunResolvedClosure) {
+    Scanner scanner("var x = \"global\";\n{\n  fun f() { print x; }\n  f();\n}");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto statements = parser.parse_statements();
+    Resolver resolver;
+    resolver.resolve(statements);
+    testing::internal::CaptureStdout();
+    interpret(statements);
+    EXPECT_EQ(testing::internal::GetCapturedStdout(), "global\n");
+}
+
+TEST(EvaluatorTest, RunGlobalSelfInit) {
+    Scanner scanner("var a = \"value\";\nvar a = a;\nprint a;");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto statements = parser.parse_statements();
+    Resolver resolver;
+    resolver.resolve(statements);
+    EXPECT_FALSE(resolver.has_errors());
+    testing::internal::CaptureStdout();
+    interpret(statements);
+    EXPECT_EQ(testing::internal::GetCapturedStdout(), "value\n");
+}
+
+TEST(EvaluatorTest, RunLocalSelfInitError) {
+    Scanner scanner("var a = \"outer\";\n{\n  var a = a;\n}");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto statements = parser.parse_statements();
+    Resolver resolver;
+    resolver.resolve(statements);
+    EXPECT_TRUE(resolver.has_errors());
 }

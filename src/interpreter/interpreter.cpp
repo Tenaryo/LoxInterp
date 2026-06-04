@@ -83,7 +83,11 @@ auto Environment::get_at(int depth, const std::string& name) -> LoxLiteral {
     for (int i = 0; i < depth; ++i) {
         env = env->enclosing_.get();
     }
-    return env->values_.at(name);
+    auto it = env->values_.find(name);
+    if (it != env->values_.end()) {
+        return it->second;
+    }
+    return std::monostate{};
 }
 
 auto Environment::assign_at(int depth, const std::string& name, LoxLiteral value) -> void {

@@ -77,8 +77,12 @@ auto Resolver::resolve(ast::Expr& expr) -> void {
                        resolve(const_cast<ast::Expr&>(bin->right));
                    },
                    [&](const std::unique_ptr<ast::Variable>& var) {
-                       if (scopes_.size() > 1 && !scopes_.back().at(var->name.lexeme)) {
-                           error(var->name, "Can't read local variable in its own initializer.");
+                       if (scopes_.size() > 1) {
+                           auto& scope = scopes_.back();
+                           auto it = scope.find(var->name.lexeme);
+                           if (it != scope.end() && !it->second) {
+                               error(var->name, "Can't read local variable in its own initializer.");
+                           }
                        }
                        resolve_local(expr, var->name);
                    },
