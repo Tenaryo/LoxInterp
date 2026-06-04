@@ -27,5 +27,6 @@ class Resolver {
     int function_depth_{0};
     int class_depth_{0};
     bool is_init_{false};
+    bool has_superclass_{false};
     bool had_error_{false};
 };

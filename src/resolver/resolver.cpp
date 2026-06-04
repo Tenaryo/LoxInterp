@@ -72,6 +72,7 @@ auto Resolver::resolve(const ast::Stmt& stmt) -> void {
             },
             [&](const std::unique_ptr<ast::ClassStmt>& cls) {
                 class_depth_++;
+                has_superclass_ = cls->superclass.has_value();
                 if (cls->superclass.has_value()) {
                     resolve(const_cast<ast::Expr&>(*cls->superclass));
                     if (auto* var = std::get_if<std::unique_ptr<ast::Variable>>(&*cls->superclass)) {
@@ -157,6 +158,10 @@ auto Resolver::resolve(ast::Expr& expr) -> void {
                    [&](const std::unique_ptr<ast::SuperExpr>& super_expr) {
                        if (class_depth_ == 0) {
                            error(super_expr->keyword, "Can't use 'super' outside of a class.");
+                           return;
+                       }
+                       if (!has_superclass_) {
+                           error(super_expr->keyword, "Can't use 'super' in a class with no superclass.");
                            return;
                        }
                        resolve_local(expr, super_expr->keyword);
