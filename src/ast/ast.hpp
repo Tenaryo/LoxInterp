@@ -154,6 +154,7 @@ struct ReturnStmt {
 
 struct ClassStmt {
     Token name;
+    std::optional<Expr> superclass;
     std::vector<std::unique_ptr<FunctionStmt>> methods;
 };
 

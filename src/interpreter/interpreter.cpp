@@ -100,6 +100,9 @@ auto LoxClass::find_method(const std::string& method_name) -> std::shared_ptr<Fu
     if (it != methods_.end()) {
         return it->second;
     }
+    if (superclass_ != nullptr) {
+        return superclass_->find_method(method_name);
+    }
     return nullptr;
 }
 
@@ -354,6 +357,15 @@ auto execute(const ast::Stmt& stmt, std::shared_ptr<Environment> env) -> void {
                    [&](const std::unique_ptr<ast::ClassStmt>& cls) {
                        auto klass = std::make_shared<LoxClass>();
                        klass->name = cls->name.lexeme;
+
+                       if (cls->superclass.has_value()) {
+                           auto super = evaluate(*cls->superclass, env);
+                           auto* super_cls = std::get_if<std::shared_ptr<Callable>>(&super);
+                           if (super_cls == nullptr || *super_cls == nullptr) {
+                               throw RuntimeError(cls->name, "Superclass must be a class.");
+                           }
+                           klass->superclass_ = std::dynamic_pointer_cast<LoxClass>(*super_cls);
+                       }
 
                        for (auto& method : cls->methods) {
                            auto& f = const_cast<ast::FunctionStmt&>(*method);

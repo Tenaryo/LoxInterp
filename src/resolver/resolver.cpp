@@ -72,6 +72,9 @@ auto Resolver::resolve(const ast::Stmt& stmt) -> void {
             },
             [&](const std::unique_ptr<ast::ClassStmt>& cls) {
                 class_depth_++;
+                if (cls->superclass.has_value()) {
+                    resolve(const_cast<ast::Expr&>(*cls->superclass));
+                }
                 for (auto& method : cls->methods) {
                     auto& m = const_cast<ast::FunctionStmt&>(*method);
                     function_depth_++;

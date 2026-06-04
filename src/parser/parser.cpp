@@ -108,6 +108,13 @@ auto Parser::function_declaration() -> ast::Stmt {
 
 auto Parser::class_declaration() -> ast::Stmt {
     Token name = consume(TokenType::IDENTIFIER, "Expect class name.");
+
+    std::optional<ast::Expr> superclass;
+    if (match(TokenType::LESS)) {
+        Token super_name = consume(TokenType::IDENTIFIER, "Expect superclass name.");
+        superclass = std::make_unique<ast::Variable>(super_name);
+    }
+
     consume(TokenType::LEFT_BRACE, "Expect '{' before class body.");
 
     std::vector<std::unique_ptr<ast::FunctionStmt>> methods;
@@ -119,8 +126,7 @@ auto Parser::class_declaration() -> ast::Stmt {
     }
 
     consume(TokenType::RIGHT_BRACE, "Expect '}' after class body.");
-    auto cls = std::make_unique<ast::ClassStmt>(name, std::move(methods));
-    return cls;
+    return std::make_unique<ast::ClassStmt>(name, std::move(superclass), std::move(methods));
 }
 
 auto Parser::block() -> ast::Stmt {
