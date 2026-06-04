@@ -531,3 +531,15 @@ TEST(EvaluatorTest, RunInheritance) {
     interpret(statements);
     EXPECT_EQ(testing::internal::GetCapturedStdout(), "B instance\n");
 }
+
+TEST(EvaluatorTest, RunSuper) {
+    Scanner scanner("class A {\n  m() { print \"A\"; }\n}\nclass B < A {\n  m() { super.m(); }\n}\nB().m();");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto statements = parser.parse_statements();
+    Resolver resolver;
+    resolver.resolve(statements);
+    testing::internal::CaptureStdout();
+    interpret(statements);
+    EXPECT_EQ(testing::internal::GetCapturedStdout(), "A\n");
+}
