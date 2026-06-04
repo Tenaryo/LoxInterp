@@ -345,3 +345,70 @@ TEST(EvaluatorTest, RunForLoop) {
     interpret(statements);
     EXPECT_EQ(testing::internal::GetCapturedStdout(), "0\n1\n");
 }
+
+TEST(EvaluatorTest, RunClock) {
+    Scanner scanner("print clock() >= 0;");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto statements = parser.parse_statements();
+    testing::internal::CaptureStdout();
+    interpret(statements);
+    EXPECT_EQ(testing::internal::GetCapturedStdout(), "true\n");
+}
+
+TEST(EvaluatorTest, RunFunction) {
+    Scanner scanner("fun foo() { print 7; } foo();");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto statements = parser.parse_statements();
+    testing::internal::CaptureStdout();
+    interpret(statements);
+    EXPECT_EQ(testing::internal::GetCapturedStdout(), "7\n");
+}
+
+TEST(EvaluatorTest, RunReturn) {
+    Scanner scanner("fun foo() { return 42; } print foo();");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto statements = parser.parse_statements();
+    testing::internal::CaptureStdout();
+    interpret(statements);
+    EXPECT_EQ(testing::internal::GetCapturedStdout(), "42\n");
+}
+
+TEST(EvaluatorTest, RunReturnNil) {
+    Scanner scanner("fun foo() { return; } print foo();");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto statements = parser.parse_statements();
+    testing::internal::CaptureStdout();
+    interpret(statements);
+    EXPECT_EQ(testing::internal::GetCapturedStdout(), "nil\n");
+}
+
+TEST(EvaluatorTest, RunClosure) {
+    Scanner scanner("fun makeCounter() { var i = 0; fun count() { i = i + 1; print i; } return count; }"
+                    "var c = makeCounter(); c(); c();");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto statements = parser.parse_statements();
+    testing::internal::CaptureStdout();
+    interpret(statements);
+    EXPECT_EQ(testing::internal::GetCapturedStdout(), "1\n2\n");
+}
+
+TEST(EvaluatorTest, RunArityError) {
+    Scanner scanner("fun f(a, b) {} f(1);");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto statements = parser.parse_statements();
+    EXPECT_THROW(interpret(statements), RuntimeError);
+}
+
+TEST(EvaluatorTest, RunCallNonFunction) {
+    Scanner scanner("42();");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto statements = parser.parse_statements();
+    EXPECT_THROW(interpret(statements), RuntimeError);
+}
