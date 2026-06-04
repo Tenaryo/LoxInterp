@@ -71,7 +71,7 @@ auto main(int argc, char* argv[]) -> int {
             return kLexicalErrorExit;
         }
         try {
-            Environment env;
+            auto env = std::make_shared<Environment>();
             auto result = evaluate(expr, env);
             std::cout << format_value(result) << '\n';
         } catch (const RuntimeError& e) {

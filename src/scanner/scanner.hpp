@@ -57,9 +57,10 @@ struct Token {
     LoxLiteral literal;
     int line;
 };
-
 struct Callable {
-    virtual auto call(Environment& env, const std::vector<LoxLiteral>& args, const Token& paren) -> LoxLiteral = 0;
+    virtual auto call(std::shared_ptr<Environment> env, const std::vector<LoxLiteral>& args, const Token& paren)
+        -> LoxLiteral
+        = 0;
     virtual ~Callable() = default;
     virtual auto to_string() const -> std::string = 0;
 };

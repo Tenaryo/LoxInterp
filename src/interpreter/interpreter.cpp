@@ -2,6 +2,7 @@
 
 #include <ctime>
 #include <iostream>
+#include <memory>
 
 #include "scanner/scanner.hpp"
 #include "util/format.hpp"
@@ -10,7 +11,7 @@
 namespace {
 
 struct NativeClock : Callable {
-    auto call(Environment& /*env*/, const std::vector<LoxLiteral>& /*args*/, const Token& /*paren*/)
+    auto call(std::shared_ptr<Environment> /*env*/, const std::vector<LoxLiteral>& /*args*/, const Token& /*paren*/)
         -> LoxLiteral override {
         return static_cast<double>(std::time(nullptr));
     }
@@ -21,15 +22,16 @@ struct NativeClock : Callable {
 
 } // namespace
 
-auto Function::call(Environment& /*env*/, const std::vector<LoxLiteral>& args, const Token& paren) -> LoxLiteral {
+auto Function::call(std::shared_ptr<Environment> /*env*/, const std::vector<LoxLiteral>& args, const Token& paren)
+    -> LoxLiteral {
     if (args.size() != params.size()) {
         throw RuntimeError(paren,
                            "Expected " + std::to_string(params.size()) + " arguments but got "
                                + std::to_string(args.size()) + ".");
     }
-    Environment func_env(closure);
+    auto func_env = std::make_shared<Environment>(closure);
     for (std::size_t i = 0; i < params.size(); ++i) {
-        func_env.define(params[i].lexeme, args[i]);
+        func_env->define(params[i].lexeme, args[i]);
     }
     try {
         for (const auto& stmt : body) {
@@ -45,7 +47,7 @@ auto Function::to_string() const -> std::string {
     return "<fn " + name.lexeme + ">";
 }
 
-Environment::Environment(Environment* enclosing) : enclosing_(enclosing) {
+Environment::Environment(std::shared_ptr<Environment> enclosing) : enclosing_(std::move(enclosing)) {
 }
 
 auto Environment::define(const std::string& name, LoxLiteral value) -> void {
@@ -76,7 +78,7 @@ auto Environment::get(const Token& name) -> LoxLiteral {
     throw RuntimeError(name, "Undefined variable '" + name.lexeme + "'.");
 }
 
-auto evaluate(const ast::Expr& expr, Environment& env) -> LoxLiteral {
+auto evaluate(const ast::Expr& expr, std::shared_ptr<Environment> env) -> LoxLiteral {
     return std::visit(
         overloaded{
             [](const ast::Literal& lit) -> LoxLiteral { return lit.value; },
@@ -144,10 +146,10 @@ auto evaluate(const ast::Expr& expr, Environment& env) -> LoxLiteral {
                 }
                 return std::monostate{};
             },
-            [&](const std::unique_ptr<ast::Variable>& var) -> LoxLiteral { return env.get(var->name); },
+            [&](const std::unique_ptr<ast::Variable>& var) -> LoxLiteral { return env->get(var->name); },
             [&](const std::unique_ptr<ast::Assign>& assign) -> LoxLiteral {
                 auto value = evaluate(assign->value, env);
-                env.assign(assign->name, std::move(value));
+                env->assign(assign->name, std::move(value));
                 return value;
             },
             [&](const std::unique_ptr<ast::Logical>& logical) -> LoxLiteral {
@@ -185,14 +187,14 @@ auto evaluate(const ast::Expr& expr, Environment& env) -> LoxLiteral {
 }
 
 auto interpret(const std::vector<ast::Stmt>& statements) -> void {
-    Environment global;
-    global.define("clock", std::make_shared<NativeClock>());
+    auto global = std::make_shared<Environment>();
+    global->define("clock", std::make_shared<NativeClock>());
     for (const auto& stmt : statements) {
         execute(stmt, global);
     }
 }
 
-auto execute(const ast::Stmt& stmt, Environment& env) -> void {
+auto execute(const ast::Stmt& stmt, std::shared_ptr<Environment> env) -> void {
     std::visit(overloaded{
                    [&](const std::unique_ptr<ast::PrintStmt>& print) {
                        auto value = evaluate(print->expression, env);
@@ -201,10 +203,10 @@ auto execute(const ast::Stmt& stmt, Environment& env) -> void {
                    [&](const std::unique_ptr<ast::ExprStmt>& expr_stmt) { evaluate(expr_stmt->expression, env); },
                    [&](const std::unique_ptr<ast::VarStmt>& var_stmt) {
                        auto value = evaluate(var_stmt->initializer, env);
-                       env.define(var_stmt->name.lexeme, std::move(value));
+                       env->define(var_stmt->name.lexeme, std::move(value));
                    },
                    [&](const std::unique_ptr<ast::BlockStmt>& block) {
-                       Environment block_env(&env);
+                       auto block_env = std::make_shared<Environment>(env);
                        for (const auto& s : block->statements) {
                            execute(s, block_env);
                        }
@@ -236,8 +238,8 @@ auto execute(const ast::Stmt& stmt, Environment& env) -> void {
                        fn->name = f.name;
                        fn->params = std::move(f.params);
                        fn->body = std::move(f.body);
-                       fn->closure = &env;
-                       env.define(fn->name.lexeme, fn);
+                       fn->closure = env;
+                       env->define(fn->name.lexeme, fn);
                    },
                    [&](const std::unique_ptr<ast::ReturnStmt>& ret) {
                        LoxLiteral value = std::monostate{};
