@@ -24,5 +24,6 @@ class Resolver {
     auto error(const Token& token, std::string_view message) -> void;
 
     std::vector<std::unordered_map<std::string, bool>> scopes_;
+    int function_depth_{0};
     bool had_error_{false};
 };

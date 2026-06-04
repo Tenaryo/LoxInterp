@@ -48,6 +48,7 @@ auto Resolver::resolve(const ast::Stmt& stmt) -> void {
             [&](const std::unique_ptr<ast::FunctionStmt>& func) {
                 declare(func->name);
                 define(func->name);
+                function_depth_++;
                 begin_scope();
                 for (const auto& param : func->params) {
                     declare(param);
@@ -57,10 +58,14 @@ auto Resolver::resolve(const ast::Stmt& stmt) -> void {
                     resolve(s);
                 }
                 end_scope();
+                function_depth_--;
             },
             [&](const std::unique_ptr<ast::ReturnStmt>& ret) {
+                if (function_depth_ == 0) {
+                    error(ret->keyword, "Can't return from top-level code.");
+                }
                 if (ret->value.has_value()) {
-                    resolve(*ret->value);
+                    resolve(const_cast<ast::Expr&>(*ret->value));
                 }
             },
         },
