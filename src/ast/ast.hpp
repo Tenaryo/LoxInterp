@@ -76,13 +76,15 @@ struct VarStmt;
 struct BlockStmt;
 struct IfStmt;
 struct WhileStmt;
+struct FunctionStmt;
 
 using Stmt = std::variant<std::unique_ptr<PrintStmt>,
                           std::unique_ptr<ExprStmt>,
                           std::unique_ptr<VarStmt>,
                           std::unique_ptr<BlockStmt>,
                           std::unique_ptr<IfStmt>,
-                          std::unique_ptr<WhileStmt>>;
+                          std::unique_ptr<WhileStmt>,
+                          std::unique_ptr<FunctionStmt>>;
 
 struct PrintStmt {
     Expr expression;
@@ -110,6 +112,12 @@ struct IfStmt {
 struct WhileStmt {
     Expr condition;
     Stmt body;
+};
+
+struct FunctionStmt {
+    Token name;
+    std::vector<Token> params;
+    std::vector<Stmt> body;
 };
 
 } // namespace ast

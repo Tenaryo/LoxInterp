@@ -12,6 +12,16 @@ struct RuntimeError : std::runtime_error {
     }
 };
 
+struct Function : Callable {
+    Token name;
+    std::vector<Token> params;
+    std::vector<ast::Stmt> body;
+    Environment* closure;
+
+    auto call(Environment& env, const std::vector<LoxLiteral>& args) -> LoxLiteral override;
+    auto to_string() const -> std::string override;
+};
+
 class Environment {
   public:
     explicit Environment(Environment* enclosing = nullptr);

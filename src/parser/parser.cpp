@@ -32,6 +32,9 @@ auto Parser::declaration() -> ast::Stmt {
     if (match(TokenType::VAR)) {
         return var_declaration();
     }
+    if (match(TokenType::FUN)) {
+        return function_declaration();
+    }
     return statement();
 }
 
@@ -76,6 +79,25 @@ auto Parser::var_declaration() -> ast::Stmt {
 
     consume(TokenType::SEMICOLON, "Expect ';' after variable declaration.");
     return std::make_unique<ast::VarStmt>(name, std::move(initializer));
+}
+
+auto Parser::function_declaration() -> ast::Stmt {
+    Token name = consume(TokenType::IDENTIFIER, "Expect function name.");
+    consume(TokenType::LEFT_PAREN, "Expect '(' after function name.");
+
+    std::vector<Token> params;
+    if (!check(TokenType::RIGHT_PAREN)) {
+        do {
+            params.push_back(consume(TokenType::IDENTIFIER, "Expect parameter name."));
+        } while (match(TokenType::COMMA));
+    }
+
+    consume(TokenType::RIGHT_PAREN, "Expect ')' after parameters.");
+    consume(TokenType::LEFT_BRACE, "Expect '{' before function body.");
+
+    auto body = block();
+    return std::make_unique<ast::FunctionStmt>(
+        name, std::move(params), std::move(std::get<std::unique_ptr<ast::BlockStmt>>(body)->statements));
 }
 
 auto Parser::block() -> ast::Stmt {

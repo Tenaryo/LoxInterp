@@ -7,6 +7,34 @@
 #include "util/format.hpp"
 #include "util/overloaded.hpp"
 
+namespace {
+
+struct NativeClock : Callable {
+    auto call(Environment& /*env*/, const std::vector<LoxLiteral>& /*args*/) -> LoxLiteral override {
+        return static_cast<double>(std::time(nullptr));
+    }
+    auto to_string() const -> std::string override {
+        return "<native fn>";
+    }
+};
+
+} // namespace
+
+auto Function::call(Environment& /*env*/, const std::vector<LoxLiteral>& args) -> LoxLiteral {
+    Environment func_env(closure);
+    for (std::size_t i = 0; i < params.size(); ++i) {
+        func_env.define(params[i].lexeme, args[i]);
+    }
+    for (const auto& stmt : body) {
+        execute(stmt, func_env);
+    }
+    return std::monostate{};
+}
+
+auto Function::to_string() const -> std::string {
+    return "<fn " + name.lexeme + ">";
+}
+
 Environment::Environment(Environment* enclosing) : enclosing_(enclosing) {
 }
 
@@ -137,10 +165,10 @@ auto evaluate(const ast::Expr& expr, Environment& env) -> LoxLiteral {
                     args.push_back(evaluate(arg, env));
                 }
                 auto* callable = std::get_if<std::shared_ptr<Callable>>(&callee);
-                if (callable == nullptr) {
+                if (callable == nullptr || *callable == nullptr) {
                     throw RuntimeError(call->paren, "Can only call functions and classes.");
                 }
-                return (*callable)->function(args);
+                return (*callable)->call(env, args);
             },
         },
         expr);
@@ -148,9 +176,7 @@ auto evaluate(const ast::Expr& expr, Environment& env) -> LoxLiteral {
 
 auto interpret(const std::vector<ast::Stmt>& statements) -> void {
     Environment global;
-    auto clock_fn = std::make_shared<Callable>(
-        Callable{[](const std::vector<LoxLiteral>&) -> LoxLiteral { return static_cast<double>(std::time(nullptr)); }});
-    global.define("clock", std::move(clock_fn));
+    global.define("clock", std::make_shared<NativeClock>());
     for (const auto& stmt : statements) {
         execute(stmt, global);
     }
@@ -194,6 +220,15 @@ auto execute(const ast::Stmt& stmt, Environment& env) -> void {
                            execute(while_stmt->body, env);
                        }
                    },
+                   [&](const std::unique_ptr<ast::FunctionStmt>& func) {
+                       auto& f = const_cast<ast::FunctionStmt&>(*func);
+                       auto fn = std::make_shared<Function>();
+                       fn->name = f.name;
+                       fn->params = std::move(f.params);
+                       fn->body = std::move(f.body);
+                       fn->closure = &env;
+                       env.define(fn->name.lexeme, fn);
+                   },
                },
                stmt);
 }
@@ -211,8 +246,11 @@ auto format_value(const LoxLiteral& value) -> std::string {
     if (const auto* str = std::get_if<std::string>(&value)) {
         return *str;
     }
-    if (std::get_if<std::shared_ptr<Callable>>(&value) != nullptr) {
-        return "<native fn>";
+    if (const auto* callable = std::get_if<std::shared_ptr<Callable>>(&value)) {
+        if (*callable != nullptr) {
+            return (*callable)->to_string();
+        }
+        return "nil";
     }
     return "nil";
 }
