@@ -38,7 +38,13 @@ auto Function::call(std::shared_ptr<Environment> /*env*/, const std::vector<LoxL
             execute(stmt, func_env);
         }
     } catch (const Return& ret) {
+        if (is_init_) {
+            return func_env->get_at(0, "this");
+        }
         return ret.value;
+    }
+    if (is_init_) {
+        return func_env->get_at(0, "this");
     }
     return std::monostate{};
 }
@@ -47,11 +53,17 @@ auto Function::to_string() const -> std::string {
     return "<fn " + name.lexeme + ">";
 }
 
-auto LoxClass::call(std::shared_ptr<Environment> /*env*/,
-                    const std::vector<LoxLiteral>& /*args*/,
-                    const Token& /*paren*/) -> LoxLiteral {
+auto LoxClass::call(std::shared_ptr<Environment> /*env*/, const std::vector<LoxLiteral>& args, const Token& /*paren*/)
+    -> LoxLiteral {
     auto instance = std::make_shared<LoxInstance>();
     instance->klass = shared_from_this();
+    auto init = find_method("init");
+    if (init != nullptr) {
+        auto bound = std::make_shared<Function>(*init);
+        bound->closure = std::make_shared<Environment>(init->closure);
+        bound->closure->define("this", instance);
+        bound->call(bound->closure, args, Token{});
+    }
     return instance;
 }
 
@@ -69,6 +81,7 @@ auto LoxInstance::get(const Token& name) -> LoxLiteral {
         auto bound = std::make_shared<Function>(*method);
         bound->closure = std::make_shared<Environment>(method->closure);
         bound->closure->define("this", shared_from_this());
+        bound->is_init_ = (name.lexeme == "init");
         return bound;
     }
     throw RuntimeError(name, "Undefined property '" + name.lexeme + "'.");

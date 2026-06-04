@@ -24,6 +24,7 @@ struct Function : Callable {
     std::vector<Token> params;
     const std::vector<ast::Stmt>* body;
     std::shared_ptr<Environment> closure;
+    bool is_init_{false};
 
     auto call(std::shared_ptr<Environment> env, const std::vector<LoxLiteral>& args, const Token& paren)
         -> LoxLiteral override;
