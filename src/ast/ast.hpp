@@ -80,6 +80,7 @@ struct IfStmt;
 struct WhileStmt;
 struct FunctionStmt;
 struct ReturnStmt;
+struct ClassStmt;
 
 using Stmt = std::variant<std::unique_ptr<PrintStmt>,
                           std::unique_ptr<ExprStmt>,
@@ -88,7 +89,8 @@ using Stmt = std::variant<std::unique_ptr<PrintStmt>,
                           std::unique_ptr<IfStmt>,
                           std::unique_ptr<WhileStmt>,
                           std::unique_ptr<FunctionStmt>,
-                          std::unique_ptr<ReturnStmt>>;
+                          std::unique_ptr<ReturnStmt>,
+                          std::unique_ptr<ClassStmt>>;
 
 struct PrintStmt {
     Expr expression;
@@ -127,6 +129,10 @@ struct FunctionStmt {
 struct ReturnStmt {
     Token keyword;
     std::optional<Expr> value;
+};
+
+struct ClassStmt {
+    Token name;
 };
 
 } // namespace ast

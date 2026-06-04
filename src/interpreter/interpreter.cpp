@@ -47,6 +47,16 @@ auto Function::to_string() const -> std::string {
     return "<fn " + name.lexeme + ">";
 }
 
+auto LoxClass::call(std::shared_ptr<Environment> /*env*/,
+                    const std::vector<LoxLiteral>& /*args*/,
+                    const Token& /*paren*/) -> LoxLiteral {
+    return std::monostate{};
+}
+
+auto LoxClass::to_string() const -> std::string {
+    return name;
+}
+
 Environment::Environment(std::shared_ptr<Environment> enclosing) : enclosing_(std::move(enclosing)) {
 }
 
@@ -275,6 +285,11 @@ auto execute(const ast::Stmt& stmt, std::shared_ptr<Environment> env) -> void {
                            value = evaluate(*ret->value, env);
                        }
                        throw Return(std::move(value));
+                   },
+                   [&](const std::unique_ptr<ast::ClassStmt>& cls) {
+                       auto klass = std::make_shared<LoxClass>();
+                       klass->name = cls->name.lexeme;
+                       env->define(cls->name.lexeme, klass);
                    },
                },
                stmt);

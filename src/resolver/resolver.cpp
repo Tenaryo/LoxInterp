@@ -68,6 +68,7 @@ auto Resolver::resolve(const ast::Stmt& stmt) -> void {
                     resolve(const_cast<ast::Expr&>(*ret->value));
                 }
             },
+            [&](const std::unique_ptr<ast::ClassStmt>& /*cls*/) {},
         },
         stmt);
 }

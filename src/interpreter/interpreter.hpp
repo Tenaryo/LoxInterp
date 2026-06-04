@@ -30,6 +30,14 @@ struct Function : Callable {
     auto to_string() const -> std::string override;
 };
 
+struct LoxClass : Callable {
+    std::string name;
+
+    auto call(std::shared_ptr<Environment> env, const std::vector<LoxLiteral>& args, const Token& paren)
+        -> LoxLiteral override;
+    auto to_string() const -> std::string override;
+};
+
 class Environment {
   public:
     explicit Environment(std::shared_ptr<Environment> enclosing = nullptr);

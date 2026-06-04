@@ -35,6 +35,9 @@ auto Parser::declaration() -> ast::Stmt {
     if (match(TokenType::FUN)) {
         return function_declaration();
     }
+    if (match(TokenType::CLASS)) {
+        return class_declaration();
+    }
     return statement();
 }
 
@@ -101,6 +104,13 @@ auto Parser::function_declaration() -> ast::Stmt {
     auto body = block();
     return std::make_unique<ast::FunctionStmt>(
         name, std::move(params), std::move(std::get<std::unique_ptr<ast::BlockStmt>>(body)->statements));
+}
+
+auto Parser::class_declaration() -> ast::Stmt {
+    Token name = consume(TokenType::IDENTIFIER, "Expect class name.");
+    consume(TokenType::LEFT_BRACE, "Expect '{' before class body.");
+    consume(TokenType::RIGHT_BRACE, "Expect '}' after class body.");
+    return std::make_unique<ast::ClassStmt>(name);
 }
 
 auto Parser::block() -> ast::Stmt {
