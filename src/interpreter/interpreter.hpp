@@ -24,7 +24,7 @@ struct Function : Callable {
     std::vector<ast::Stmt> body;
     Environment* closure;
 
-    auto call(Environment& env, const std::vector<LoxLiteral>& args) -> LoxLiteral override;
+    auto call(Environment& env, const std::vector<LoxLiteral>& args, const Token& paren) -> LoxLiteral override;
     auto to_string() const -> std::string override;
 };
 

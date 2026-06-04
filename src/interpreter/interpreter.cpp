@@ -10,7 +10,8 @@
 namespace {
 
 struct NativeClock : Callable {
-    auto call(Environment& /*env*/, const std::vector<LoxLiteral>& /*args*/) -> LoxLiteral override {
+    auto call(Environment& /*env*/, const std::vector<LoxLiteral>& /*args*/, const Token& /*paren*/)
+        -> LoxLiteral override {
         return static_cast<double>(std::time(nullptr));
     }
     auto to_string() const -> std::string override {
@@ -20,7 +21,12 @@ struct NativeClock : Callable {
 
 } // namespace
 
-auto Function::call(Environment& /*env*/, const std::vector<LoxLiteral>& args) -> LoxLiteral {
+auto Function::call(Environment& /*env*/, const std::vector<LoxLiteral>& args, const Token& paren) -> LoxLiteral {
+    if (args.size() != params.size()) {
+        throw RuntimeError(paren,
+                           "Expected " + std::to_string(params.size()) + " arguments but got "
+                               + std::to_string(args.size()) + ".");
+    }
     Environment func_env(closure);
     for (std::size_t i = 0; i < params.size(); ++i) {
         func_env.define(params[i].lexeme, args[i]);
@@ -172,7 +178,7 @@ auto evaluate(const ast::Expr& expr, Environment& env) -> LoxLiteral {
                 if (callable == nullptr || *callable == nullptr) {
                     throw RuntimeError(call->paren, "Can only call functions and classes.");
                 }
-                return (*callable)->call(env, args);
+                return (*callable)->call(env, args, call->paren);
             },
         },
         expr);
