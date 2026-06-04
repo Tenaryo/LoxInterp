@@ -38,9 +38,13 @@ struct LoxClass : Callable, std::enable_shared_from_this<LoxClass> {
     auto to_string() const -> std::string override;
 };
 
-struct LoxInstance {
+struct LoxInstance : std::enable_shared_from_this<LoxInstance> {
     std::shared_ptr<LoxClass> klass;
+    std::unordered_map<std::string, LoxLiteral> fields_;
+
     auto to_string() const -> std::string;
+    auto get(const Token& name) -> LoxLiteral;
+    auto set(const Token& name, LoxLiteral value) -> void;
 };
 
 class Environment {

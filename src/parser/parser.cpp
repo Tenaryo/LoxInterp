@@ -212,6 +212,10 @@ auto Parser::assignment() -> ast::Expr {
         if (auto* var = std::get_if<std::unique_ptr<ast::Variable>>(&expr)) {
             return std::make_unique<ast::Assign>((*var)->name, std::move(value));
         }
+        if (auto* get = std::get_if<std::unique_ptr<ast::Get>>(&expr)) {
+            return std::make_unique<ast::Set>(
+                std::move(const_cast<ast::Expr&>((*get)->object)), (*get)->name, std::move(value));
+        }
         error(equals, "Invalid assignment target.");
     }
     return expr;
@@ -292,6 +296,9 @@ auto Parser::call() -> ast::Expr {
     while (true) {
         if (match(TokenType::LEFT_PAREN)) {
             expr = finish_call(std::move(expr));
+        } else if (match(TokenType::DOT)) {
+            Token name = consume(TokenType::IDENTIFIER, "Expect property name after '.'.");
+            expr = std::make_unique<ast::Get>(std::move(expr), name);
         } else {
             break;
         }
@@ -457,6 +464,12 @@ auto print_ast(const ast::Expr& expr) -> std::string {
                                   result += print_ast(call->arguments[i]);
                               }
                               return result + ")";
+                          },
+                          [&](const std::unique_ptr<ast::Get>& get) -> std::string {
+                              return print_ast(get->object) + "." + get->name.lexeme;
+                          },
+                          [&](const std::unique_ptr<ast::Set>& set) -> std::string {
+                              return print_ast(set->object) + "." + set->name.lexeme + " = " + print_ast(set->value);
                           },
                       },
                       expr);

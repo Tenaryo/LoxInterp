@@ -59,6 +59,18 @@ auto LoxInstance::to_string() const -> std::string {
     return klass->name + " instance";
 }
 
+auto LoxInstance::get(const Token& name) -> LoxLiteral {
+    auto it = fields_.find(name.lexeme);
+    if (it != fields_.end()) {
+        return it->second;
+    }
+    throw RuntimeError(name, "Undefined property '" + name.lexeme + "'.");
+}
+
+auto LoxInstance::set(const Token& name, LoxLiteral value) -> void {
+    fields_[name.lexeme] = std::move(value);
+}
+
 auto LoxClass::to_string() const -> std::string {
     return name;
 }
@@ -226,6 +238,24 @@ auto evaluate(const ast::Expr& expr, std::shared_ptr<Environment> env) -> LoxLit
                     throw RuntimeError(call->paren, "Can only call functions and classes.");
                 }
                 return (*callable)->call(env, args, call->paren);
+            },
+            [&](const std::unique_ptr<ast::Get>& get) -> LoxLiteral {
+                auto object = evaluate(get->object, env);
+                auto* instance = std::get_if<std::shared_ptr<LoxInstance>>(&object);
+                if (instance == nullptr || *instance == nullptr) {
+                    throw RuntimeError(get->name, "Only instances have properties.");
+                }
+                return (*instance)->get(get->name);
+            },
+            [&](const std::unique_ptr<ast::Set>& set) -> LoxLiteral {
+                auto object = evaluate(set->object, env);
+                auto* instance = std::get_if<std::shared_ptr<LoxInstance>>(&object);
+                if (instance == nullptr || *instance == nullptr) {
+                    throw RuntimeError(set->name, "Only instances have fields.");
+                }
+                auto value = evaluate(set->value, env);
+                (*instance)->set(set->name, value);
+                return value;
             },
         },
         expr);

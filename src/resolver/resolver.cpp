@@ -103,8 +103,13 @@ auto Resolver::resolve(ast::Expr& expr) -> void {
                    [&](const std::unique_ptr<ast::Call>& call) {
                        resolve(const_cast<ast::Expr&>(call->callee));
                        for (auto& arg : call->arguments) {
-                           resolve(arg);
+                           resolve(const_cast<ast::Expr&>(arg));
                        }
+                   },
+                   [&](const std::unique_ptr<ast::Get>& get) { resolve(const_cast<ast::Expr&>(get->object)); },
+                   [&](const std::unique_ptr<ast::Set>& set) {
+                       resolve(const_cast<ast::Expr&>(set->value));
+                       resolve(const_cast<ast::Expr&>(set->object));
                    },
                },
                expr);

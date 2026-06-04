@@ -18,6 +18,8 @@ struct Variable;
 struct Assign;
 struct Logical;
 struct Call;
+struct Get;
+struct Set;
 
 struct Literal {
     LoxLiteral value;
@@ -30,7 +32,9 @@ using Expr = std::variant<Literal,
                           std::unique_ptr<Variable>,
                           std::unique_ptr<Assign>,
                           std::unique_ptr<Logical>,
-                          std::unique_ptr<Call>>;
+                          std::unique_ptr<Call>,
+                          std::unique_ptr<Get>,
+                          std::unique_ptr<Set>>;
 
 struct Binary {
     Expr left;
@@ -68,6 +72,17 @@ struct Call {
     Expr callee;
     Token paren;
     std::vector<Expr> arguments;
+};
+
+struct Get {
+    Expr object;
+    Token name;
+};
+
+struct Set {
+    Expr object;
+    Token name;
+    Expr value;
 };
 
 // Statements

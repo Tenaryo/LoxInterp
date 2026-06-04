@@ -483,3 +483,15 @@ TEST(EvaluatorTest, RunClassInstance) {
     interpret(statements);
     EXPECT_EQ(testing::internal::GetCapturedStdout(), "Spaceship instance\n");
 }
+
+TEST(EvaluatorTest, RunInstanceProperty) {
+    Scanner scanner("class Ship {}\nvar s = Ship();\ns.name = \"Falcon\";\nprint s.name;");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto statements = parser.parse_statements();
+    Resolver resolver;
+    resolver.resolve(statements);
+    testing::internal::CaptureStdout();
+    interpret(statements);
+    EXPECT_EQ(testing::internal::GetCapturedStdout(), "Falcon\n");
+}
