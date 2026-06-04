@@ -49,7 +49,9 @@ enum class TokenType {
 
 class Environment;
 struct Callable;
-using LoxLiteral = std::variant<std::monostate, bool, std::string, double, std::shared_ptr<Callable>>;
+struct LoxInstance;
+using LoxLiteral
+    = std::variant<std::monostate, bool, std::string, double, std::shared_ptr<Callable>, std::shared_ptr<LoxInstance>>;
 
 struct Token {
     TokenType type;

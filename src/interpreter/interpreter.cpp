@@ -50,7 +50,13 @@ auto Function::to_string() const -> std::string {
 auto LoxClass::call(std::shared_ptr<Environment> /*env*/,
                     const std::vector<LoxLiteral>& /*args*/,
                     const Token& /*paren*/) -> LoxLiteral {
-    return std::monostate{};
+    auto instance = std::make_shared<LoxInstance>();
+    instance->klass = shared_from_this();
+    return instance;
+}
+
+auto LoxInstance::to_string() const -> std::string {
+    return klass->name + " instance";
 }
 
 auto LoxClass::to_string() const -> std::string {
@@ -311,6 +317,12 @@ auto format_value(const LoxLiteral& value) -> std::string {
     if (const auto* callable = std::get_if<std::shared_ptr<Callable>>(&value)) {
         if (*callable != nullptr) {
             return (*callable)->to_string();
+        }
+        return "nil";
+    }
+    if (const auto* instance = std::get_if<std::shared_ptr<LoxInstance>>(&value)) {
+        if (*instance != nullptr) {
+            return (*instance)->to_string();
         }
         return "nil";
     }

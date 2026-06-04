@@ -30,12 +30,17 @@ struct Function : Callable {
     auto to_string() const -> std::string override;
 };
 
-struct LoxClass : Callable {
+struct LoxClass : Callable, std::enable_shared_from_this<LoxClass> {
     std::string name;
 
     auto call(std::shared_ptr<Environment> env, const std::vector<LoxLiteral>& args, const Token& paren)
         -> LoxLiteral override;
     auto to_string() const -> std::string override;
+};
+
+struct LoxInstance {
+    std::shared_ptr<LoxClass> klass;
+    auto to_string() const -> std::string;
 };
 
 class Environment {

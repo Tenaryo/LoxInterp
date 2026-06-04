@@ -471,3 +471,15 @@ TEST(EvaluatorTest, RunLocalRedeclarationError) {
     resolver.resolve(statements);
     EXPECT_TRUE(resolver.has_errors());
 }
+
+TEST(EvaluatorTest, RunClassInstance) {
+    Scanner scanner("class Spaceship {}\nvar falcon = Spaceship();\nprint falcon;");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto statements = parser.parse_statements();
+    Resolver resolver;
+    resolver.resolve(statements);
+    testing::internal::CaptureStdout();
+    interpret(statements);
+    EXPECT_EQ(testing::internal::GetCapturedStdout(), "Spaceship instance\n");
+}
