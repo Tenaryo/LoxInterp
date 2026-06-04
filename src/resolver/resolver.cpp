@@ -88,6 +88,11 @@ auto Resolver::resolve(const ast::Stmt& stmt) -> void {
                     Token this_token{TokenType::THIS, "this", std::monostate{}, cls->name.line};
                     declare(this_token);
                     define(this_token);
+                    if (cls->superclass.has_value()) {
+                        Token super_token{TokenType::SUPER, "super", std::monostate{}, cls->name.line};
+                        declare(super_token);
+                        define(super_token);
+                    }
                     for (const auto& param : m.params) {
                         declare(param);
                         define(param);
@@ -148,6 +153,13 @@ auto Resolver::resolve(ast::Expr& expr) -> void {
                            return;
                        }
                        resolve_local(expr, this_expr->keyword);
+                   },
+                   [&](const std::unique_ptr<ast::SuperExpr>& super_expr) {
+                       if (class_depth_ == 0) {
+                           error(super_expr->keyword, "Can't use 'super' outside of a class.");
+                           return;
+                       }
+                       resolve_local(expr, super_expr->keyword);
                    },
                },
                expr);

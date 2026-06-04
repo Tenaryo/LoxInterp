@@ -21,6 +21,7 @@ struct Call;
 struct Get;
 struct Set;
 struct ThisExpr;
+struct SuperExpr;
 
 struct Literal {
     LoxLiteral value;
@@ -36,7 +37,8 @@ using Expr = std::variant<Literal,
                           std::unique_ptr<Call>,
                           std::unique_ptr<Get>,
                           std::unique_ptr<Set>,
-                          std::unique_ptr<ThisExpr>>;
+                          std::unique_ptr<ThisExpr>,
+                          std::unique_ptr<SuperExpr>>;
 
 struct Binary {
     Expr left;
@@ -89,6 +91,11 @@ struct Set {
 
 struct ThisExpr {
     Token keyword;
+};
+
+struct SuperExpr {
+    Token keyword;
+    Token method;
 };
 
 // Statements

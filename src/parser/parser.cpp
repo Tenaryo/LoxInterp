@@ -352,6 +352,12 @@ auto Parser::primary() -> ast::Expr {
     if (match(TokenType::THIS)) {
         return std::make_unique<ast::ThisExpr>(previous());
     }
+    if (match(TokenType::SUPER)) {
+        Token keyword = previous();
+        consume(TokenType::DOT, "Expect '.' after 'super'.");
+        Token method = consume(TokenType::IDENTIFIER, "Expect superclass method name.");
+        return std::make_unique<ast::SuperExpr>(keyword, method);
+    }
     if (match(TokenType::LEFT_PAREN)) {
         auto expr = expression();
         consume(TokenType::RIGHT_PAREN, "Expect ')' after expression.");
@@ -491,6 +497,9 @@ auto print_ast(const ast::Expr& expr) -> std::string {
                               return print_ast(set->object) + "." + set->name.lexeme + " = " + print_ast(set->value);
                           },
                           [&](const std::unique_ptr<ast::ThisExpr>& /*this_expr*/) -> std::string { return "this"; },
+                          [&](const std::unique_ptr<ast::SuperExpr>& super) -> std::string {
+                              return "super." + super->method.lexeme;
+                          },
                       },
                       expr);
 }

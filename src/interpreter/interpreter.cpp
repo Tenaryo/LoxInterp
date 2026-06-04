@@ -289,6 +289,23 @@ auto evaluate(const ast::Expr& expr, std::shared_ptr<Environment> env) -> LoxLit
                 return value;
             },
             [&](const std::unique_ptr<ast::ThisExpr>& this_expr) -> LoxLiteral { return env->get(this_expr->keyword); },
+            [&](const std::unique_ptr<ast::SuperExpr>& super_expr) -> LoxLiteral {
+                Token this_token{TokenType::THIS, "this", std::monostate{}, super_expr->keyword.line};
+                auto this_val = env->get(this_token);
+                auto* instance = std::get_if<std::shared_ptr<LoxInstance>>(&this_val);
+                auto superclass = (*instance)->klass->superclass_;
+                if (superclass == nullptr) {
+                    throw RuntimeError(super_expr->keyword, "Superclass not found.");
+                }
+                auto method = superclass->find_method(super_expr->method.lexeme);
+                if (method == nullptr) {
+                    throw RuntimeError(super_expr->method, "Undefined property '" + super_expr->method.lexeme + "'.");
+                }
+                auto bound = std::make_shared<Function>(*method);
+                bound->closure = std::make_shared<Environment>(method->closure);
+                bound->closure->define("this", *instance);
+                return bound;
+            },
         },
         expr);
 }
