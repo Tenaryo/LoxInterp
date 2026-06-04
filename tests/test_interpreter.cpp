@@ -507,3 +507,15 @@ TEST(EvaluatorTest, RunInstanceMethod) {
     interpret(statements);
     EXPECT_EQ(testing::internal::GetCapturedStdout(), "Beep!\n");
 }
+
+TEST(EvaluatorTest, RunConstructor) {
+    Scanner scanner("class Default {\n  init() {\n    this.x = \"bar\";\n  }\n}\nprint Default().x;");
+    auto tokens = scanner.scan_tokens();
+    Parser parser(std::move(tokens));
+    auto statements = parser.parse_statements();
+    Resolver resolver;
+    resolver.resolve(statements);
+    testing::internal::CaptureStdout();
+    interpret(statements);
+    EXPECT_EQ(testing::internal::GetCapturedStdout(), "bar\n");
+}

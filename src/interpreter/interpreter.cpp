@@ -39,12 +39,12 @@ auto Function::call(std::shared_ptr<Environment> /*env*/, const std::vector<LoxL
         }
     } catch (const Return& ret) {
         if (is_init_) {
-            return func_env->get_at(0, "this");
+            return func_env->get_at(1, "this");
         }
         return ret.value;
     }
     if (is_init_) {
-        return func_env->get_at(0, "this");
+        return func_env->get_at(1, "this");
     }
     return std::monostate{};
 }
