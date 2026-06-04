@@ -68,7 +68,25 @@ auto Resolver::resolve(const ast::Stmt& stmt) -> void {
                     resolve(const_cast<ast::Expr&>(*ret->value));
                 }
             },
-            [&](const std::unique_ptr<ast::ClassStmt>& /*cls*/) {},
+            [&](const std::unique_ptr<ast::ClassStmt>& cls) {
+                for (auto& method : cls->methods) {
+                    auto& m = const_cast<ast::FunctionStmt&>(*method);
+                    function_depth_++;
+                    begin_scope();
+                    Token this_token{TokenType::THIS, "this", std::monostate{}, cls->name.line};
+                    declare(this_token);
+                    define(this_token);
+                    for (const auto& param : m.params) {
+                        declare(param);
+                        define(param);
+                    }
+                    for (const auto& s : m.body) {
+                        resolve(s);
+                    }
+                    end_scope();
+                    function_depth_--;
+                }
+            },
         },
         stmt);
 }
@@ -111,6 +129,7 @@ auto Resolver::resolve(ast::Expr& expr) -> void {
                        resolve(const_cast<ast::Expr&>(set->value));
                        resolve(const_cast<ast::Expr&>(set->object));
                    },
+                   [&](const std::unique_ptr<ast::ThisExpr>& this_expr) { resolve_local(expr, this_expr->keyword); },
                },
                expr);
 }

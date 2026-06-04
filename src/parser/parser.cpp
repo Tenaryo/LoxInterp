@@ -343,6 +343,9 @@ auto Parser::primary() -> ast::Expr {
     if (match(TokenType::IDENTIFIER)) {
         return std::make_unique<ast::Variable>(previous());
     }
+    if (match(TokenType::THIS)) {
+        return std::make_unique<ast::ThisExpr>(previous());
+    }
     if (match(TokenType::LEFT_PAREN)) {
         auto expr = expression();
         consume(TokenType::RIGHT_PAREN, "Expect ')' after expression.");
@@ -481,6 +484,7 @@ auto print_ast(const ast::Expr& expr) -> std::string {
                           [&](const std::unique_ptr<ast::Set>& set) -> std::string {
                               return print_ast(set->object) + "." + set->name.lexeme + " = " + print_ast(set->value);
                           },
+                          [&](const std::unique_ptr<ast::ThisExpr>& /*this_expr*/) -> std::string { return "this"; },
                       },
                       expr);
 }

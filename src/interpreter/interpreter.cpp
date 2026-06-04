@@ -272,6 +272,7 @@ auto evaluate(const ast::Expr& expr, std::shared_ptr<Environment> env) -> LoxLit
                 (*instance)->set(set->name, value);
                 return value;
             },
+            [&](const std::unique_ptr<ast::ThisExpr>& this_expr) -> LoxLiteral { return env->get(this_expr->keyword); },
         },
         expr);
 }
