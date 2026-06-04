@@ -25,8 +25,12 @@ auto Function::call(Environment& /*env*/, const std::vector<LoxLiteral>& args) -
     for (std::size_t i = 0; i < params.size(); ++i) {
         func_env.define(params[i].lexeme, args[i]);
     }
-    for (const auto& stmt : body) {
-        execute(stmt, func_env);
+    try {
+        for (const auto& stmt : body) {
+            execute(stmt, func_env);
+        }
+    } catch (const Return& ret) {
+        return ret.value;
     }
     return std::monostate{};
 }
@@ -228,6 +232,13 @@ auto execute(const ast::Stmt& stmt, Environment& env) -> void {
                        fn->body = std::move(f.body);
                        fn->closure = &env;
                        env.define(fn->name.lexeme, fn);
+                   },
+                   [&](const std::unique_ptr<ast::ReturnStmt>& ret) {
+                       LoxLiteral value = std::monostate{};
+                       if (ret->value.has_value()) {
+                           value = evaluate(*ret->value, env);
+                       }
+                       throw Return(std::move(value));
                    },
                },
                stmt);

@@ -12,6 +12,12 @@ struct RuntimeError : std::runtime_error {
     }
 };
 
+struct Return : std::runtime_error {
+    LoxLiteral value;
+    Return(LoxLiteral val) : std::runtime_error(""), value(std::move(val)) {
+    }
+};
+
 struct Function : Callable {
     Token name;
     std::vector<Token> params;

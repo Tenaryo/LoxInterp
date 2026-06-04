@@ -54,6 +54,9 @@ auto Parser::statement() -> ast::Stmt {
     if (match(TokenType::FOR)) {
         return for_statement();
     }
+    if (match(TokenType::RETURN)) {
+        return return_statement();
+    }
     return expr_statement();
 }
 
@@ -171,6 +174,16 @@ auto Parser::for_statement() -> ast::Stmt {
         return std::make_unique<ast::BlockStmt>(std::move(outer_stmts));
     }
     return while_stmt;
+}
+
+auto Parser::return_statement() -> ast::Stmt {
+    Token keyword = previous();
+    std::optional<ast::Expr> value;
+    if (!check(TokenType::SEMICOLON)) {
+        value = expression();
+    }
+    consume(TokenType::SEMICOLON, "Expect ';' after return value.");
+    return std::make_unique<ast::ReturnStmt>(keyword, std::move(value));
 }
 
 auto Parser::has_errors() const -> bool {
