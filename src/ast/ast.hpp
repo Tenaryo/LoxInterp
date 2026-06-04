@@ -49,11 +49,13 @@ struct Unary {
 
 struct Variable {
     Token name;
+    int depth = -1;
 };
 
 struct Assign {
     Token name;
     Expr value;
+    int depth = -1;
 };
 
 struct Logical {

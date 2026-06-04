@@ -36,6 +36,8 @@ class Environment {
     auto define(const std::string& name, LoxLiteral value) -> void;
     auto assign(const Token& name, LoxLiteral value) -> void;
     auto get(const Token& name) -> LoxLiteral;
+    auto get_at(int depth, const std::string& name) -> LoxLiteral;
+    auto assign_at(int depth, const std::string& name, LoxLiteral value) -> void;
 
   private:
     std::unordered_map<std::string, LoxLiteral> values_;

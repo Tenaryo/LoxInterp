@@ -7,6 +7,7 @@
 
 #include "interpreter/interpreter.hpp"
 #include "parser/parser.hpp"
+#include "resolver/resolver.hpp"
 #include "scanner/scanner.hpp"
 
 auto read_file_contents(const std::filesystem::path& path) -> std::string {
@@ -91,6 +92,8 @@ auto main(int argc, char* argv[]) -> int {
         if (parser.has_errors()) {
             return kLexicalErrorExit;
         }
+        Resolver resolver;
+        resolver.resolve(statements);
         try {
             interpret(statements);
         } catch (const RuntimeError& e) {

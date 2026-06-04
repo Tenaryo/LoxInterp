@@ -78,6 +78,22 @@ auto Environment::get(const Token& name) -> LoxLiteral {
     throw RuntimeError(name, "Undefined variable '" + name.lexeme + "'.");
 }
 
+auto Environment::get_at(int depth, const std::string& name) -> LoxLiteral {
+    auto* env = this;
+    for (int i = 0; i < depth; ++i) {
+        env = env->enclosing_.get();
+    }
+    return env->values_.at(name);
+}
+
+auto Environment::assign_at(int depth, const std::string& name, LoxLiteral value) -> void {
+    auto* env = this;
+    for (int i = 0; i < depth; ++i) {
+        env = env->enclosing_.get();
+    }
+    env->values_[name] = std::move(value);
+}
+
 auto evaluate(const ast::Expr& expr, std::shared_ptr<Environment> env) -> LoxLiteral {
     return std::visit(
         overloaded{
@@ -146,10 +162,19 @@ auto evaluate(const ast::Expr& expr, std::shared_ptr<Environment> env) -> LoxLit
                 }
                 return std::monostate{};
             },
-            [&](const std::unique_ptr<ast::Variable>& var) -> LoxLiteral { return env->get(var->name); },
+            [&](const std::unique_ptr<ast::Variable>& var) -> LoxLiteral {
+                if (var->depth >= 0) {
+                    return env->get_at(var->depth, var->name.lexeme);
+                }
+                return env->get(var->name);
+            },
             [&](const std::unique_ptr<ast::Assign>& assign) -> LoxLiteral {
                 auto value = evaluate(assign->value, env);
-                env->assign(assign->name, std::move(value));
+                if (assign->depth >= 0) {
+                    env->assign_at(assign->depth, assign->name.lexeme, value);
+                } else {
+                    env->assign(assign->name, value);
+                }
                 return value;
             },
             [&](const std::unique_ptr<ast::Logical>& logical) -> LoxLiteral {

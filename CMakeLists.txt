@@ -10,7 +10,10 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-add_library(LoxInterp_core STATIC src/scanner/scanner.cpp src/parser/parser.cpp src/interpreter/interpreter.cpp)
+add_library(
+    LoxInterp_core STATIC src/scanner/scanner.cpp src/parser/parser.cpp src/interpreter/interpreter.cpp
+                          src/resolver/resolver.cpp
+)
 target_include_directories(LoxInterp_core PUBLIC ${CMAKE_SOURCE_DIR}/src)
 target_compile_features(LoxInterp_core PUBLIC cxx_std_23)
 target_compile_options(
