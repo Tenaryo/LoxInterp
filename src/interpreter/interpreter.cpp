@@ -314,6 +314,11 @@ auto evaluate(const ast::Expr& expr, std::shared_ptr<Environment> env) -> LoxLit
                 auto bound = std::make_shared<Function>(*method);
                 bound->closure = std::make_shared<Environment>(method->closure);
                 bound->closure->define("this", *instance);
+                if (auto dc = method->declaring_class_.lock()) {
+                    if (dc->superclass_ != nullptr) {
+                        bound->closure->define("super", dc->superclass_);
+                    }
+                }
                 return bound;
             },
         },
