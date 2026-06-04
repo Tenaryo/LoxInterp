@@ -1,5 +1,7 @@
 #include "resolver/resolver.hpp"
 
+#include <iostream>
+
 #include "util/overloaded.hpp"
 
 Resolver::Resolver() {
@@ -74,7 +76,13 @@ auto Resolver::resolve(ast::Expr& expr) -> void {
                        resolve(const_cast<ast::Expr&>(bin->left));
                        resolve(const_cast<ast::Expr&>(bin->right));
                    },
-                   [&](const std::unique_ptr<ast::Variable>& var) { resolve_local(expr, var->name); },
+                   [&](const std::unique_ptr<ast::Variable>& var) {
+                       if (!scopes_.empty() && scopes_.back().count(var->name.lexeme) != 0
+                           && !scopes_.back().at(var->name.lexeme)) {
+                           error(var->name, "Can't read local variable in its own initializer.");
+                       }
+                       resolve_local(expr, var->name);
+                   },
                    [&](const std::unique_ptr<ast::Assign>& assign) {
                        resolve(const_cast<ast::Expr&>(assign->value));
                        resolve_local(expr, assign->name);
@@ -99,6 +107,19 @@ auto Resolver::begin_scope() -> void {
 
 auto Resolver::end_scope() -> void {
     scopes_.pop_back();
+}
+
+auto Resolver::has_errors() const -> bool {
+    return had_error_;
+}
+
+auto Resolver::error(const Token& token, std::string_view message) -> void {
+    had_error_ = true;
+    if (token.type == TokenType::EOF_) {
+        std::cerr << "[line " << token.line << "] Error at end: " << message << '\n';
+    } else {
+        std::cerr << "[line " << token.line << "] Error at '" << token.lexeme << "': " << message << '\n';
+    }
 }
 
 auto Resolver::declare(const Token& name) -> void {

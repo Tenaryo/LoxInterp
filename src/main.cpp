@@ -94,6 +94,9 @@ auto main(int argc, char* argv[]) -> int {
         }
         Resolver resolver;
         resolver.resolve(statements);
+        if (resolver.has_errors()) {
+            return kLexicalErrorExit;
+        }
         try {
             interpret(statements);
         } catch (const RuntimeError& e) {
