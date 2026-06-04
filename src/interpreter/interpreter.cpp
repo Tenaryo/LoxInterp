@@ -34,7 +34,7 @@ auto Function::call(std::shared_ptr<Environment> /*env*/, const std::vector<LoxL
         func_env->define(params[i].lexeme, args[i]);
     }
     try {
-        for (const auto& stmt : body) {
+        for (const auto& stmt : *body) {
             execute(stmt, func_env);
         }
     } catch (const Return& ret) {
@@ -233,11 +233,10 @@ auto execute(const ast::Stmt& stmt, std::shared_ptr<Environment> env) -> void {
                        }
                    },
                    [&](const std::unique_ptr<ast::FunctionStmt>& func) {
-                       auto& f = const_cast<ast::FunctionStmt&>(*func);
                        auto fn = std::make_shared<Function>();
-                       fn->name = f.name;
-                       fn->params = std::move(f.params);
-                       fn->body = std::move(f.body);
+                       fn->name = func->name;
+                       fn->params = func->params;
+                       fn->body = &func->body;
                        fn->closure = env;
                        env->define(fn->name.lexeme, fn);
                    },

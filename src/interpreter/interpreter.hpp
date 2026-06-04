@@ -22,7 +22,7 @@ struct Return : std::runtime_error {
 struct Function : Callable {
     Token name;
     std::vector<Token> params;
-    std::vector<ast::Stmt> body;
+    const std::vector<ast::Stmt>* body;
     std::shared_ptr<Environment> closure;
 
     auto call(std::shared_ptr<Environment> env, const std::vector<LoxLiteral>& args, const Token& paren)
