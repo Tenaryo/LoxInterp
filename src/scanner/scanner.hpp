@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 #include <string>
 #include <variant>
 #include <vector>
@@ -47,39 +46,13 @@ enum class TokenType {
     EOF_,
 };
 
-class Environment;
-struct Callable;
-struct LoxInstance;
-
 using TokenLiteral = std::variant<std::monostate, bool, std::string, double>;
-using LoxLiteral
-    = std::variant<std::monostate, bool, std::string, double, std::shared_ptr<Callable>, std::shared_ptr<LoxInstance>>;
-
-inline auto to_lox_literal(const TokenLiteral& lit) -> LoxLiteral {
-    if (std::holds_alternative<std::monostate>(lit)) {
-        return std::monostate{};
-    }
-    if (std::holds_alternative<bool>(lit)) {
-        return std::get<bool>(lit);
-    }
-    if (std::holds_alternative<std::string>(lit)) {
-        return std::get<std::string>(lit);
-    }
-    return std::get<double>(lit);
-}
 
 struct Token {
     TokenType type;
     std::string lexeme;
     TokenLiteral literal;
     int line;
-};
-struct Callable {
-    virtual auto call(std::shared_ptr<Environment> env, const std::vector<LoxLiteral>& args, const Token& paren)
-        -> LoxLiteral
-        = 0;
-    virtual ~Callable() = default;
-    virtual auto to_string() const -> std::string = 0;
 };
 
 class Scanner {
