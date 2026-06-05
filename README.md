@@ -1,50 +1,84 @@
-[![progress-banner](https://backend.codecrafters.io/progress/interpreter/e0abd5b0-21ff-4c20-aa6c-df8301ba1a51)](https://app.codecrafters.io/users/codecrafters-bot?r=2qF)
+# LoxInterp
 
-This is a starting point for C++ solutions to the
-["Build your own Interpreter" Challenge](https://app.codecrafters.io/courses/interpreter/overview).
+A C++23 tree-walk interpreter for the [Lox](https://craftinginterpreters.com/the-lox-language.html) language, following [Crafting Interpreters](https://craftinginterpreters.com/) by Robert Nystrom.
 
-This challenge follows the book
-[Crafting Interpreters](https://craftinginterpreters.com/) by Robert Nystrom.
+## Architecture
 
-In this challenge you'll build an interpreter for
-[Lox](https://craftinginterpreters.com/the-lox-language.html), a simple
-scripting language. Along the way, you'll learn about tokenization, ASTs,
-tree-walk interpreters and more.
-
-Before starting this challenge, make sure you've read the "Welcome" part of the
-book that contains these chapters:
-
-- [Introduction](https://craftinginterpreters.com/introduction.html) (chapter 1)
-- [A Map of the Territory](https://craftinginterpreters.com/a-map-of-the-territory.html)
-  (chapter 2)
-- [The Lox Language](https://craftinginterpreters.com/the-lox-language.html)
-  (chapter 3)
-
-These chapters don't involve writing code, so they won't be covered in this
-challenge. This challenge will start from chapter 4,
-[Scanning](https://craftinginterpreters.com/scanning.html).
-
-**Note**: If you're viewing this repo on GitHub, head over to
-[codecrafters.io](https://codecrafters.io) to try the challenge.
-
-# Passing the first stage
-
-The entry point for your program is in `src/main.cpp`. Study and uncomment the
-relevant code, and then run the command below to execute the tests on our
-servers:
-
-```sh
-codecrafters submit
+```
+src/
+├── main.cpp              # CLI entry point
+├── scanner/              # Lexer: source → tokens
+│   ├── scanner.hpp
+│   └── scanner.cpp
+├── ast/                  # AST node definitions (Expr, Stmt)
+│   └── ast.hpp
+├── parser/               # Recursive-descent parser: tokens → AST
+│   ├── parser.hpp
+│   └── parser.cpp
+├── resolver/             # Compile-time binding & validation
+│   ├── resolver.hpp
+│   └── resolver.cpp
+├── interpreter/          # Tree-walk evaluator
+│   ├── interpreter.hpp
+│   └── interpreter.cpp
+└── util/                 # Utilities
+    ├── overloaded.hpp    # std::visit helper
+    └── format.hpp        # Number formatting
 ```
 
-Time to move on to the next stage!
+## Supported Features
 
-# Stage 2 & beyond
+- **Scanner**: 39 token types, keywords, strings, numbers, comments, multi-line error reporting
+- **Parser**: Full recursive-descent expression parser (assignment, logic, equality, comparison, arithmetic, unary, grouping)
+- **AST**: 13 node types (7 Expr + 6 Stmt)
+- **Interpreter**: tree-walk evaluation with environment chain for scoping
+- **Resolver**: compile-time variable binding, self-init detection, redeclaration check, `this`/`super` validation
+- **Statements**: print, expression, variable declaration, block, if/else, while, for (desugared)
+- **Functions**: declarations, calls, closures, return statements, native `clock()`
+- **Classes**: declarations, instances, properties (get/set), methods, `this`, constructors (`init`), inheritance, `super`
+- **Error handling**: lexical (65), syntax (65), runtime (70), resolver (65)
+- **Tests**: 127 tests across scanner, parser, interpreter
 
-Note: This section is for stages 2 and beyond.
+## Commands
 
-1. Ensure you have `cmake` installed locally
-2. Run `./your_program.sh` to run your program, which is implemented in
-   `src/main.cpp`.
-3. Run `codecrafters submit` to submit your solution to CodeCrafters. Test
-   output will be streamed to your terminal.
+```sh
+./your_program.sh tokenize <file>   # Lexical analysis
+./your_program.sh parse <file>      # Parse to AST (prints s-expression)
+./your_program.sh evaluate <file>   # Evaluate single expression
+./your_program.sh run <file>        # Execute full program
+```
+
+## Build & Test
+
+```sh
+./build.sh              # Debug build
+./build.sh Release      # Release build
+./run_tests.sh          # Run all tests
+```
+
+## Language Features
+
+```lox
+// Variables & scoping
+var x = 42;
+{ var x = "shadow"; print x; }
+
+// Functions & closures
+fun counter() {
+    var i = 0;
+    fun next() { i = i + 1; return i; }
+    return next;
+}
+
+// Classes & inheritance
+class Animal {
+    init(name) { this.name = name; }
+    speak() { print this.name; }
+}
+class Dog < Animal {
+    speak() {
+        super.speak();
+        print "woof!";
+    }
+}
+```
