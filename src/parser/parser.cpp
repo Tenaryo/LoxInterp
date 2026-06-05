@@ -344,7 +344,7 @@ auto Parser::primary() -> ast::Expr {
         return ast::Literal{std::monostate{}};
     }
     if (match(TokenType::NUMBER) || match(TokenType::STRING)) {
-        return ast::Literal{previous().literal};
+        return ast::Literal{to_lox_literal(previous().literal)};
     }
     if (match(TokenType::IDENTIFIER)) {
         return std::make_unique<ast::Variable>(previous());

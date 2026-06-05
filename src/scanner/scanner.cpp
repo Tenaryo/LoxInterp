@@ -77,7 +77,7 @@ auto Scanner::add_token(TokenType type) -> void {
     add_token(type, std::monostate{});
 }
 
-auto Scanner::add_token(TokenType type, LoxLiteral literal) -> void {
+auto Scanner::add_token(TokenType type, TokenLiteral literal) -> void {
     std::string lexeme = source_.substr(start_, current_ - start_);
     tokens_.push_back({type, std::move(lexeme), std::move(literal), line_});
 }
@@ -311,7 +311,7 @@ auto format_token(const Token& token) -> std::string {
         return "UNKNOWN";
     };
 
-    auto literal_str = [](const LoxLiteral& lit) -> std::string {
+    auto literal_str = [](const TokenLiteral& lit) -> std::string {
         if (std::holds_alternative<std::monostate>(lit)) {
             return "null";
         }

@@ -50,13 +50,28 @@ enum class TokenType {
 class Environment;
 struct Callable;
 struct LoxInstance;
+
+using TokenLiteral = std::variant<std::monostate, bool, std::string, double>;
 using LoxLiteral
     = std::variant<std::monostate, bool, std::string, double, std::shared_ptr<Callable>, std::shared_ptr<LoxInstance>>;
+
+inline auto to_lox_literal(const TokenLiteral& lit) -> LoxLiteral {
+    if (std::holds_alternative<std::monostate>(lit)) {
+        return std::monostate{};
+    }
+    if (std::holds_alternative<bool>(lit)) {
+        return std::get<bool>(lit);
+    }
+    if (std::holds_alternative<std::string>(lit)) {
+        return std::get<std::string>(lit);
+    }
+    return std::get<double>(lit);
+}
 
 struct Token {
     TokenType type;
     std::string lexeme;
-    LoxLiteral literal;
+    TokenLiteral literal;
     int line;
 };
 struct Callable {
@@ -80,7 +95,7 @@ class Scanner {
     auto peek() const -> char;
     auto peek_next() const -> char;
     auto add_token(TokenType type) -> void;
-    auto add_token(TokenType type, LoxLiteral literal) -> void;
+    auto add_token(TokenType type, TokenLiteral literal) -> void;
     auto scan_token() -> void;
     auto error(int line, std::string_view message) -> void;
     auto match(char expected) -> bool;
